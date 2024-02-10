@@ -9,9 +9,6 @@ import { CONFIGURACIONES } from '../configs/confing';
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa6";
 
-const baseUrl="https://proto-api2-0.vercel.app/api/auth/signin";
-//const baseUrl="http://192.168.1.68:4000/api/auth/signin";
-
 
 function LoginCom() {
 
@@ -61,6 +58,13 @@ function LoginCom() {
     }
   }
 
+  const commingSon = () =>{
+    Swal.fire({
+      icon: "info",
+      title: "Próximamente...",
+    }); 
+  }
+
   const onSubmit = async () =>{
     loginFunction();
    
@@ -93,7 +97,7 @@ function LoginCom() {
   return (
     
     <div className="bg-white px-10 py-20 md:w-[600px] rounded-3xl shadow-xl border-2 border-gray-100">
-      <h1 className="text-5xl font-semibold">Bienvenido</h1>
+      <h1 className="text-5xl font-semibold max-sm:flex max-sm:flex-col max-sm:border-b-2 max-sm:pb-5">Bienvenido a <span className=' text-4xl font-bold'>SoftionPro</span></h1>
       <div className="mt-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
@@ -139,14 +143,14 @@ function LoginCom() {
         
 
           <div className="mt-8 flex justify-center items-center">
-              <p className="font-medium text-base">No tengo cuenta?</p>
+              <p className="font-medium text-base">¿No tengo cuenta?</p>
               <Link className=" text-blue-600 text-base font-medium ml-2" to='/Register' >Regístrate ahora</Link>
           </div>
           <button type="submit" disabled={OnSubtmit} className=" disabled:bg-blue-100 disabled:cursor-not-allowed  active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 rounded-xl bg-blue-600 text-white text-lg font-bold w-[100%] mt-5">iniciar sesión</button>
         </form>
         <div className="mt-8 flex flex-col gap-y-4">
               
-              <button className="flex rounded-xl py-3 border-2 border-gray-100 items-center justify-center gap-2 active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out">
+              <button onClick={commingSon} className="flex rounded-xl py-3 border-2 border-gray-100 items-center justify-center gap-2 active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M5.26644 9.76453C6.19903 6.93863 8.85469 4.90909 12.0002 4.90909C13.6912 4.90909 15.2184 5.50909 16.4184 6.49091L19.9093 3C17.7821 1.14545 15.0548 0 12.0002 0C7.27031 0 3.19799 2.6983 1.24023 6.65002L5.26644 9.76453Z" fill="#EA4335"/>
                       <path d="M16.0406 18.0142C14.9508 18.718 13.5659 19.0926 11.9998 19.0926C8.86633 19.0926 6.21896 17.0785 5.27682 14.2695L1.2373 17.3366C3.19263 21.2953 7.26484 24.0017 11.9998 24.0017C14.9327 24.0017 17.7352 22.959 19.834 21.0012L16.0406 18.0142Z" fill="#34A853"/>

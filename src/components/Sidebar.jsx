@@ -149,7 +149,7 @@ const Sidebar = () => {
     <div className={`bg-primary-900 h-full fixed lg:static w-[80%] md:w-[40%] lg:w-full transition-all duration-300 ${ShowMenu ? "left-0" : "-left-full"}`}> 
       {/* Profile */}
         <div className='flex flex-col items-center justify-center p-8 gap-2 h-[30vh]'>
-          <img src="/public/imagenes/Imagen1.ico" className='w-20 h-20 object-cover'/>
+          <img src="/imagenes/Imagen1.ico" className='w-20 h-20 object-cover'/>
           <h1 className='text-xl text-white font-bold'>SoftionPro</h1>
         </div>
       {/* Nav */}

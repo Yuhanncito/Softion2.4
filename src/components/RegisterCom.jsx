@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 //Icons
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa6";
+import { CONFIGURACIONES } from '../configs/confing';
 
 function RegisterCom() {
 
@@ -26,7 +27,7 @@ function RegisterCom() {
     if (termsAccepted) {
       setOnSubmit(!OnSubmit);
       try {
-        const response = await fetch("https://proto-api2-0.vercel.app/api/auth/signup", {
+        const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/signup", {
           method: "POST",
           headers: {
             'Content-Type': 'application/json'

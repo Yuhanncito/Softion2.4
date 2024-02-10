@@ -8,6 +8,7 @@ import Cookies from 'universal-cookie';
 //Icons
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa6";
+import { CONFIGURACIONES } from '../configs/confing';
 
 function ResetPass() {
 
@@ -43,7 +44,7 @@ function ResetPass() {
   const resetPass = async () =>{
 
     try{
-      const response = await fetch("https://proto-api2-0.vercel.app/api/auth/forgotPassword/update",{
+      const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/forgotPassword/update",{
         method:"PUT",
         headers:{
           'Content-Type': 'application/json',
@@ -80,18 +81,21 @@ function ResetPass() {
   
   return (
     
-      <div className="flex justify-center bg-white py-6 mx-auto w-96 rounded-2xl border-2 m-40">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center justify-center">
-            <h1 className="text-5xl font-semibold text-center">Nueva constraseña</h1>
+      <div className="flex w-full h-screen justify-center items-center">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex shadow-xl bg-white w-[90%] h-[70%] md:w-[50%] md:h-[60%] flex-col items-center justify-center">
+            <h1 className="text-5xl font-semibold text-center">Nueva contraseña</h1>
             <div className='w-[80%] flex flex-col mt-10 mx-auto max-w-md'>
                 <label className="text-lg font-medium ml-2">Password</label>
-                {showPassword ? (
-                  <FaRegEye onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
+               
+                <div className="flex border-2 border-gray-100 rounded-xl focus:outline-5">
+                  <input onChange={handleChange} type={(showPassword)?'text':'password'} name='password' className="w-full  p-4 mt-1 bg-transparent focus:outline-none" placeholder="Introduce tu correo electrónico" /> 
+                  {showPassword ? (
+                  <FaRegEye onClick={handleShowPassword} className=" inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
                 ) : (
-                  <FaRegEyeSlash onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
+                  <FaRegEyeSlash onClick={handleShowPassword} className=" inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
                 )}
-                <input onChange={handleChange} type='password' name='password' className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" 
-                placeholder="Introduce tu correo electrónico" /> 
+                </div>
+            
                 {errors.email && <p className="text-red-500 text-xs italic text-center">Introduce un correo electrónico válido.</p>}
             </div>
             <div className="mt-8 flex gap-x-4 justify-center w-full">

@@ -52,7 +52,7 @@ const LayoutPrivate = () => {
           <Contenido/>
   
         </div>
-        <div className="h-[100%] pt-2 pb-9 px-12">
+        <div className="h-[100%] pt-2 pb-9 px-12 overflow-y-scroll">
           <Outlet />
         </div>
       </main>

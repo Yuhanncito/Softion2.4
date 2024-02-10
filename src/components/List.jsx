@@ -84,7 +84,7 @@ function List() {
   
   
   return (
-    <div className=" flex-col h-full ">
+    <div className=" flex-col h-full  ">
       <div className="flex flex-col w-[100%] h-[calc(100%-10%)] p-5">
 
       {
@@ -107,11 +107,6 @@ function List() {
           <div className=" w-[20%] border-6 border-red-500"></div>
           <div className=" w-[20%]"></div>
           <div className=" w-[25%]"></div>
-          <h1>hola</h1>
-          <h2>Hola gerardo Olivares Aguilar</h2>
-          <h1>jijija</h1>
-          <h3>Asu mecha</h3>
-          <h3>aSUMECHA 3.0</h3>
         </div>
         
       </div>

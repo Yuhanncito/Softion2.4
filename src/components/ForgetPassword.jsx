@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
+import { CONFIGURACIONES } from '../configs/confing';
 
 
 function ForgetPassword() {
@@ -14,7 +15,7 @@ function ForgetPassword() {
 
   const onSubmit = async() =>{
     try{
-      const response = await fetch("https://proto-api2-0.vercel.app/api/auth/forgotPassword",{
+      const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/forgotPassword",{
         method:"POST",
         headers:{
           'Content-Type': 'application/json'
@@ -59,7 +60,7 @@ function ForgetPassword() {
     
       <div className="flex justify-center h-screen w-screen items-center">
         <form onSubmit={handleSubmit(onSubmit)} className="flex bg-white flex-col w-[90%] shadow-xl rounded-2xl lg:w-[50%] h-[60%] px-10 items-center justify-center">
-            <h1 className="md:text-5xl text-4xl font-semibold text-center">Recuperacion de Contraseña</h1>
+            <h1 className="md:text-5xl text-4xl font-semibold text-center">Recuperación de Contraseña</h1>
             <div className='w-full flex flex-col mt-10'>
                 <label className="text-lg font-medium" htmlFor='email'>Email</label>
                 <input id='email' {...register('email', { required: true, pattern: /^\S+@\S+$/i })} onChange={handleChange} type='email' name='email' className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" 
@@ -72,7 +73,7 @@ function ForgetPassword() {
                 <button type="submit" name='regis' className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" >Recuperar</button>
             </div>
             <div className="mt-8 flex justify-center items-center w-full">
-              <p className="font-medium text-base">Ya tienes una cuenta?</p>
+              <p className="font-medium text-base">¿Ya tienes una cuenta?</p>
               <button className=" text-blue-600 text-base font-medium ml-2" onClick={canceLar}>Ingresa</button>
           </div>
         </form>

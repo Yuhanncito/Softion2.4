@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
 import Cookies from 'universal-cookie';
+import { CONFIGURACIONES } from '../configs/confing';
 
 
 
@@ -23,7 +24,7 @@ function CodigoVer() {
 
   const onSubmit = async(data) =>{
     try{
-      const res = await fetch(`https://proto-api2-0.vercel.app/api/auth/${(generalData.option === "register")?'signup':(generalData.option==="login")?'signin':'forgotPassword'}/confirm`,{
+      const res = await fetch(CONFIGURACIONES.BASEURL+`/auth/${(generalData.option === "register")?'signup':(generalData.option==="login")?'signin':'forgotPassword'}/confirm`,{
         method:"POST",
         headers:{
           'Content-Type': 'application/json'
