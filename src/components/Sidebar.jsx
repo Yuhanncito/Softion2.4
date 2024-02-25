@@ -1,8 +1,10 @@
 import { useEffect, useState} from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { useUserContext } from "../context/UseContext";
 import SearchButton from "./SearchButton";
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const cookies = new Cookies();
 
@@ -16,8 +18,8 @@ import { FaHome } from "react-icons/fa";
 import { FaFolderOpen } from "react-icons/fa6";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
-import { MdDelete } from "react-icons/md";
 import { CONFIGURACIONES } from "../configs/confing";
+import ProjectItem from "./ProjectItem";
 
 
 
@@ -27,43 +29,21 @@ const Sidebar = () => {
   const {setProjectId} = useUserContext();
   const navigate = useNavigate();
   const [ShowMenu, setShowMenu] = useState(false);
-  const [showItems,setShowItems] = useState(true);
+  const [showWorkspace,setShowWorkspace] = useState(true);
   const Menus = ['cerrar sesion'];
   const [Open,setOpen] = useState(false);
-  const clases = document.getElementById('engranaje');
-  const [isopen,setIsopen] = useState(false);
   const [project,setProject] = useState([]);
+  const [workspace,setWorkspace] = useState([]);
   const [searchProject, setSearchProject] = useState([])
   const [search, setSearch] = useState('');
   const [newProject, setNewProject] =  useState('');
-  const [isSelect, setIsSelect] =  useState(false);
 
   
- 
 
-  const girar=()=>{
-    setOpen(!Open)
-    if (clases.classList.contains('rotate-90')){
-      clases.classList.remove('rotate-90');
-    }
-    else{
-      clases.classList.add('rotate-90')
-    }
-  }
 
   const cerrarSesion= async ()=>{
      cookies.remove("x-access-user")
      navigate("/")
-  }
-
-
-
-  
-  const ocularCosas=()=>{
-    setShowItems(!showItems)
-    //ShowMenu?document.body.style.overflow='hidden':document.body.style.
-    const lista = document.getElementById('hidden');
-    showItems ? lista.style.display="none" : lista.style.display="block"
   }
 
   const searchSubmit = (e) =>{
@@ -85,20 +65,21 @@ const Sidebar = () => {
   }
 
   const handleSubmitProject = async (e) =>{
-      
-      
+      e.preventDefault()
+      const formulario = new FormData(e.target)
       const resp = await fetch(CONFIGURACIONES.BASEURL+"/projects",{
         headers:{
           "Content-Type":"application/json",
           "x-access-token":cookies.get("x-access-user")
         },
         method:"POST",
-        body:JSON.stringify({"nameProject":newProject})
+        body:JSON.stringify({"nameProject":newProject, "workspaceid": formulario.get('id')})
       })
       console.log(resp)
       const parse = await resp.json();
-
       console.log(parse)
+      getData();
+      setNewProject('')
       
     }
 
@@ -112,7 +93,8 @@ const Sidebar = () => {
           },
           method:'DELETE',
           body:JSON.stringify({
-            idProject:formulario.get('id')
+            idProject:formulario.get('id'),
+            workSpaceid:formulario.get('idWorkSpace')
           })
         })
         const parse = await response.json();
@@ -124,24 +106,44 @@ const Sidebar = () => {
       
     }
 
+    const getData = async() =>{
+      const datos = await fetch(CONFIGURACIONES.BASEURL+'/projects',{
+        headers:{
+          "Content-Type":"application/json",
+          "x-access-token":cookies.get("x-access-user")
+        },
+        method:"GET"
+      })
 
+      const datos2 = await fetch(CONFIGURACIONES.BASEURL+'/workspace',{
+        headers:{
+          "Content-Type":"application/json",
+          "x-access-token":cookies.get("x-access-user")
+        },
+        method:"GET"
+      })
+
+      const parse = await datos.json();
+      const parse2 = await datos2.json();
+
+      setProject(parse)
+      setSearchProject(parse)
+      setWorkspace(parse2)
+      console.log("proyectos",parse)
+      console.log("trabajos",parse2)
+    }
 
     useEffect(() => {
-      const getData = async() =>{
-        const datos = await fetch(CONFIGURACIONES.BASEURL+'/projects',{
-          headers:{
-            "Content-Type":"application/json",
-            "x-access-token":cookies.get("x-access-user")
-          },
-          method:"GET"
-        })
-        const parse = await datos.json();
-        setProject(parse)
-        setSearchProject(parse)
-        console.log(parse)
-      }
+      
       getData()
     }, [])
+
+    const hiddenItems = e =>{
+      e.currentTarget.children[0].classList.toggle("rotate-90")
+      e.currentTarget.classList.toggle("bg-primary-900/80")
+      e.currentTarget.classList.toggle("hover:bg-primary-900/50")
+      e.currentTarget.nextElementSibling.classList.toggle("hidden")
+    }
     
 
   return (
@@ -185,54 +187,54 @@ const Sidebar = () => {
               <FaHome />Inicio
             </a>
 
-            <div className=' flex items-center w-[100%]  flex-row  gap-4 text-white  p-2  transition-colors hover:bg-primary-900/50 rounded-xl'>
-              <div className="hover:bg-primary-900/50 flex items-center  rounded-xl justify-around w-[80%] h-[100%]">
-                <button onClick={ocularCosas} className="flex px-4 justify-center items-center">
-                  {(showItems)?<IoIosArrowDown />: <IoIosArrowForward />}
-                    <FaFolderOpen className=" mx-1" />Proyectos
-                </button>
-              </div>
-              <button onClick={()=>{setIsopen(true)}}  className=" hover:bg-primary-900/50 flex items-center py-2 px-2 rounded-xl justify-around ">
-                  <IoMdAdd />
-              </button>
-              {
-                isopen &&(
-                      <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center ">
-                        <form onSubmit={handleSubmitProject} className="bg-white p-5 rounded flex flex-col justify-center items-center gap-5">
-                            <div className="flex flex-col h-[100%] w-[100%] justify-around justify-items-center items-center flex-wrap md:flex-nowrap ml-4">
-                              <label className=" text-black">
-                               Escribe el nombre del proyecto
-                              </label>
-                                <input name="nameProject" id="nameProject" onChange={(e)=>{setNewProject(e.target.value)}} type="text" className="w-64 px-4 border-2 border-gray-300 rounded-lg text-black focus:outline-none focus:border-indigo-500 duration-200" placeholder=" " />
-                                <div className="flex gap-4 mt-3">
-                                    <button className="flex bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={()=>setIsopen(false)}>Cancelar</button>
-                                    <button className="flex bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Crear Proyecto</button>
-                                </div>
-                            </div>
-                        </form>
+            <div className="flex w-full py-4 ">
+              <div className="flex w-full flex-col items-center">
+                <div onClick={()=>{setShowWorkspace(!showWorkspace)}} className="flex hover:bg-primary-900/50 w-full cursor-pointer p-7 rounded-lg  text-white py-2 items-center">
+                  <IoIosArrowForward className={((showWorkspace)?"":" rotate-90")+" transition-all flex mr-2"}/>
+                  <h1 className="">Areas de trabajo</h1>
+                </div>
+                <div className={((showWorkspace)?"hidden":"")+" transition-all flex flex-col w-full  text-white "}>
+                {
+                  workspace.map((w)=>(
+                    <div className="flex rounded-lg flex-col w-full">
+                    <div onClick={hiddenItems} className="flex rounded-lg items-center cursor-pointer pl-12 py-2 hover:bg-primary-900/50">
+                      <IoIosArrowForward id="rotateItem" className=" transition-all flex mr-2"/>
+                      <h1>{w.workSpaceName}</h1>
                     </div>
-                )
-            }
-            </div>
-            <div id="hidden">
-            {searchProject.map((p, index) => (
-              <div className=" w-full flex flex-row justify-between rounded-lg hover:bg-primary-900/50">
-                <button key={index} onClick={()=>{setProjectId(p._id)}} className='flex flex-row w-[90%] items-center gap-4 text-white py-2 px-6 rounded-xl hover:bg-primary-900/50 transition-colors'> 
-                 <RiCheckboxMultipleBlankLine className=" w-[20%] "/>
-                 <span className=" w-[80%]">{p.nameProject}</span>
-                </button>
-                <form onSubmit={handleDeleteProject} className=" flex  rounded-xl hover:bg-primary-900/50">
-                  <input type="hidden" name="id" value={p._id} />
-                  <button className=" py-2 px-6 h-full w-full">
-                   <MdDelete className="text-red-500" />
-                  </button>
-                </form>
+                    <div className=" hidden flex-col w-full ">
+                      <form onSubmit={handleSubmitProject} className="w-full m-auto flex flex-col">
+                            <input type="hidden" name="id" value={w._id}/>
+                            <input value={newProject} onChange={(e)=>{setNewProject(e.target.value)}} type="text" name="nameProject" id="nameProject" className="text-center bg-transparent hover:bg-gray-500/10 text-white py-2 focus:border-white focus:bg-primary-900/40" placeholder="Agregar proyecto" />
+                      </form>
+                      {w.projects.length > 0 ? (
+                        <AutoSizer>
+                          {({ height, width }) => (
+                            <List
+                              className="flex w-full h-[300px] absolute"
+                              height={500}
+                              width={width}
+                              itemCount={w.projects.length}
+                              itemSize={35}
+                            >
+                              {({ index, style }) => (
+                                <div style={style}>
+                                  <ProjectItem context={setProjectId} workSpaceid={w._id} action={handleDeleteProject} name={w.projects[index].nameProject} id={w.projects[index]._id}/>
+                                </div>
+                              )}
+                            </List>
+                          )}
+                        </AutoSizer>
+                      ) : (
+                        <div className="text-white text-center">No hay proyectos para mostrar</div>
+                      )}
+                      
+                    </div>
+                  </div>
+                  ))
+                }
+                </div>
               </div>
-            ))}
             </div>
-            <form onSubmit={handleSubmitProject} className="w-56 m-auto flex flex-col">
-              <input onChange={(e)=>{setNewProject(e.target.value)}} type="text" name="nameProject" id="nameProject" className="text-center bg-transparent hover:bg-gray-500/10 text-white" placeholder="+" />
-            </form>
           </nav>
           <div className="content-end">  
           {Open &&(
@@ -261,3 +263,53 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
+
+const dataSiderbar = `<div className=' flex items-center w-[100%]  flex-row  gap-4 text-white  p-2  transition-colors hover:bg-primary-900/50 rounded-xl'>
+<div className="hover:bg-primary-900/50 flex items-center  rounded-xl justify-around w-[80%] h-[100%]">
+  <button onClick={ocularCosas} className="flex px-4 justify-center items-center">
+    {(showItems)?<IoIosArrowDown />: <IoIosArrowForward />}
+      <FaFolderOpen className=" mx-1" />Proyectos
+  </button>
+</div>
+<button onClick={()=>{setIsopen(true)}}  className=" hover:bg-primary-900/50 flex items-center py-2 px-2 rounded-xl justify-around ">
+    <IoMdAdd />
+</button>
+{
+  isopen &&(
+        <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center ">
+          <form onSubmit={handleSubmitProject} className="bg-white p-5 rounded flex flex-col justify-center items-center gap-5">
+              <div className="flex flex-col h-[100%] w-[100%] justify-around justify-items-center items-center flex-wrap md:flex-nowrap ml-4">
+                <label className=" text-black">
+                 Escribe el nombre del proyecto
+                </label>
+                  <input name="nameProject" id="nameProject" onChange={(e)=>{setNewProject(e.target.value)}} type="text" className="w-64 px-4 border-2 border-gray-300 rounded-lg text-black focus:outline-none focus:border-indigo-500 duration-200" placeholder=" " />
+                  <div className="flex gap-4 mt-3">
+                      <button className="flex bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={()=>setIsopen(false)}>Cancelar</button>
+                      <button className="flex bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Crear Proyecto</button>
+                  </div>
+              </div>
+          </form>
+      </div>
+  )
+}
+</div>
+<div id="hidden">
+{searchProject.map((p, index) => (
+<div className=" w-full flex flex-row justify-between rounded-lg hover:bg-primary-900/50">
+  <button key={index} onClick={()=>{setProjectId(p._id)}} className='flex flex-row w-[90%] items-center gap-4 text-white py-2 px-6 rounded-xl hover:bg-primary-900/50 transition-colors'> 
+   <RiCheckboxMultipleBlankLine className=" w-[20%] "/>
+   <span className=" w-[80%]">{p.nameProject}</span>
+  </button>
+  <form onSubmit={handleDeleteProject} className=" flex  rounded-xl hover:bg-primary-900/50">
+    <input type="hidden" name="id" value={p._id} />
+    <button className=" py-2 px-6 h-full w-full">
+     <MdDelete className="text-red-500" />
+    </button>
+  </form>
+</div>
+))}
+</div>
+<form onSubmit={handleSubmitProject} className="w-56 m-auto flex flex-col">
+<input onChange={(e)=>{setNewProject(e.target.value)}} type="text" name="nameProject" id="nameProject" className="text-center bg-transparent hover:bg-gray-500/10 text-white" placeholder="+" />
+</form>`

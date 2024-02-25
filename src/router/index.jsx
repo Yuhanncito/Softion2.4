@@ -13,6 +13,7 @@ import LayoutPublic from "../layouts/LayoutPublic";
 import ResetPass from "../components/ResetPass";
 import List from "../components/List";
 import Gantt from "../components/Gantt";
+import Gantt2 from "../views/Gantt";
 
 
 export const router = createBrowserRouter([
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Login />,
+      },
+      {
+        path:"/test/gantt",
+        element: <Gantt2 />
       },
       {
         path: "/Register",

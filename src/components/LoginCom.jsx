@@ -14,11 +14,15 @@ function LoginCom() {
 
   const navigate = useNavigate();
 
+  const [count, setCount] = useState(5)
+
   const {setGeneralData} = useUserContext();
 
   const [OnSubtmit, setOnSubtmit] = useState(false)
 
   const { handleSubmit, register, formState: { errors } } = useForm();
+
+  
 
   const loginFunction = async() => {
     setOnSubtmit(!OnSubtmit)
@@ -40,8 +44,10 @@ function LoginCom() {
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: json.message,
+          text: json.message + `\n Tienes ${count} intentos`,
         });
+
+        setCount(count-1);
       }
       
     }
@@ -56,6 +62,8 @@ function LoginCom() {
     finally{
       setOnSubtmit(false);
     }
+    
+    if(count === 0) setOnSubtmit(true) 
   }
 
   const commingSon = () =>{

@@ -5,6 +5,7 @@ import { useUserContext } from "../context/UseContext";
 import { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
 import { CONFIGURACIONES } from "../configs/confing";
+import Swal from 'sweetalert2'
 
 
 
@@ -14,6 +15,8 @@ function List() {
   const [NewTask, setTask] = useState({
     nameTask:''
   });
+
+  const [intent,setIntent] = useState(0);
  
 
   const cookies = new Cookies();
@@ -53,6 +56,7 @@ function List() {
 
   const handleSubmit = async (e) =>{
     e.preventDefault()
+    console.log(NewTask)
     try {
       const response = await fetch(CONFIGURACIONES.BASEURL+'/task/newTask',{
         body:JSON.stringify({
