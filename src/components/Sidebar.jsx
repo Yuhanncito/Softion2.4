@@ -1,10 +1,11 @@
-import { useEffect, useState} from "react";
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { useUserContext } from "../context/UseContext";
 import SearchButton from "./SearchButton";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+
 
 const cookies = new Cookies();
 
@@ -38,6 +39,8 @@ const Sidebar = () => {
   const [search, setSearch] = useState('');
   const [newProject, setNewProject] =  useState('');
 
+
+  const [visibleWorkspaces, setVisibleWorkspaces] = useState([]);
   
 
 
@@ -64,24 +67,26 @@ const Sidebar = () => {
     setSearch(e.target.value)
   }
 
-  const handleSubmitProject = async (e) =>{
-      e.preventDefault()
-      const formulario = new FormData(e.target)
-      const resp = await fetch(CONFIGURACIONES.BASEURL+"/projects",{
-        headers:{
-          "Content-Type":"application/json",
-          "x-access-token":cookies.get("x-access-user")
-        },
-        method:"POST",
-        body:JSON.stringify({"nameProject":newProject, "workspaceid": formulario.get('id')})
-      })
-      console.log(resp)
-      const parse = await resp.json();
-      console.log(parse)
-      getData();
-      setNewProject('')
-      
-    }
+  const handleSubmitProject = async (e, workSpaceId) => {
+    e.preventDefault();
+    const formulario = new FormData(e.target);
+    const resp = await fetch(CONFIGURACIONES.BASEURL + "/projects", {
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": cookies.get("x-access-user"),
+      },
+      method: "POST",
+      body: JSON.stringify({
+        nameProject: newProject,
+        workspaceid: workSpaceId,  // Usa el workSpaceId recibido
+      }),
+    });
+    console.log(resp);
+    const parse = await resp.json();
+    console.log(parse);
+    getData();
+    setNewProject('');
+  };
 
     const  handleDeleteProject = async (e) => {
       try {
@@ -138,12 +143,29 @@ const Sidebar = () => {
       getData()
     }, [])
 
-    const hiddenItems = e =>{
-      e.currentTarget.children[0].classList.toggle("rotate-90")
-      e.currentTarget.classList.toggle("bg-primary-900/80")
-      e.currentTarget.classList.toggle("hover:bg-primary-900/50")
-      e.currentTarget.nextElementSibling.classList.toggle("hidden")
-    }
+
+    /*Pruebas Sid */
+
+    const hiddenItems = (e, workspaceId, index) => {
+      e.currentTarget.children[0].classList.toggle("rotate-90");
+      e.currentTarget.classList.toggle("bg-primary-900/80");
+      e.currentTarget.classList.toggle("hover:bg-primary-900/50");
+      e.currentTarget.nextElementSibling.classList.toggle("hidden");
+  
+  
+      // Alternar visibilidad para el espacio de trabajo clicado
+      const updatedVisibleWorkspaces = [...visibleWorkspaces];
+      updatedVisibleWorkspaces[index] = !updatedVisibleWorkspaces[index];
+      setVisibleWorkspaces(updatedVisibleWorkspaces);
+    };
+  
+
+    const handleWorkspaceClick = (workspaceId) => {
+      // Ocultar todos los demás espacios de trabajo
+      const updatedVisibleWorkspaces = visibleWorkspaces.map((_, index) => index === workspaceId);
+      setVisibleWorkspaces(updatedVisibleWorkspaces);
+    };
+  
     
 
   return (
@@ -181,7 +203,7 @@ const Sidebar = () => {
             `}
           </style>
           <nav className="flex flex-col gap-7">
-          <SearchButton  handleSubmit={searchSubmit} onChange={handleChange}  />
+            <SearchButton  handleSubmit={searchSubmit} onChange={handleChange}  />
 
             <a href="/App" className='flex items-center gap-4 text-white py-2 px-4 rounded-xl hover:bg-primary-900/50 transition-colors'> 
               <FaHome />Inicio
@@ -193,65 +215,91 @@ const Sidebar = () => {
                   <IoIosArrowForward className={((showWorkspace)?"":" rotate-90")+" transition-all flex mr-2"}/>
                   <h1 className="">Areas de trabajo</h1>
                 </div>
-                <div className={((showWorkspace)?"hidden":"")+" transition-all flex flex-col w-full  text-white "}>
-                {
-                  workspace.map((w)=>(
-                    <div className="flex rounded-lg flex-col w-full">
-                    <div onClick={hiddenItems} className="flex rounded-lg items-center cursor-pointer pl-12 py-2 hover:bg-primary-900/50">
-                      <IoIosArrowForward id="rotateItem" className=" transition-all flex mr-2"/>
-                      <h1>{w.workSpaceName}</h1>
-                    </div>
-                    <div className=" hidden flex-col w-full ">
-                      <form onSubmit={handleSubmitProject} className="w-full m-auto flex flex-col">
-                            <input type="hidden" name="id" value={w._id}/>
-                            <input value={newProject} onChange={(e)=>{setNewProject(e.target.value)}} type="text" name="nameProject" id="nameProject" className="text-center bg-transparent hover:bg-gray-500/10 text-white py-2 focus:border-white focus:bg-primary-900/40" placeholder="Agregar proyecto" />
+
+
+                <div className={((showWorkspace)?"hidden ":"")+"flex flex-col w-full text-white" }>
+                  {workspace.map((w, index) => (
+                    <div className="mb-4" key={index}>
+                      <div
+                        onClick={(e) => {
+                          hiddenItems(e, w._id, index);
+                          handleWorkspaceClick(index);
+                        }}
+                        className="flex rounded-lg items-center cursor-pointer pl-12 py-2 hover:bg-primary-900/50"
+                      >
+                        <IoIosArrowForward
+                          id="rotateItem"
+                          className={`transition-all flex mr-2 ${visibleWorkspaces[index] ? '' : 'rotate-90'}`}
+                        />
+                        <h1>{w.workSpaceName}</h1>
+                      </div>
+                    <div className={`flex flex-col w-full text-white ${visibleWorkspaces[index] ? '' : 'hidden'}`}>
+                      <form onSubmit={(e) => handleSubmitProject(e, w._id)} className="w-full m-auto flex flex-col">
+                        <input type="hidden" name="id" value={w._id} />
+                        <input
+                          value={newProject}
+                          onChange={(e) => setNewProject(e.target.value)}
+                          type="text"
+                          name="nameProject"
+                          id="nameProject"
+                          className="text-center bg-transparent hover:bg-gray-500/10 text-white py-2 focus:border-white focus:bg-primary-900/40"
+                          placeholder="Agregar proyecto"
+                        />
                       </form>
-                      {w.projects.length > 0 ? (
-                        <AutoSizer>
-                          {({ height, width }) => (
-                            <List
-                              className="flex w-full h-[300px] absolute"
-                              height={500}
-                              width={width}
-                              itemCount={w.projects.length}
-                              itemSize={35}
-                            >
-                              {({ index, style }) => (
-                                <div style={style}>
-                                  <ProjectItem context={setProjectId} workSpaceid={w._id} action={handleDeleteProject} name={w.projects[index].nameProject} id={w.projects[index]._id}/>
-                                </div>
-                              )}
-                            </List>
-                          )}
-                        </AutoSizer>
-                      ) : (
-                        <div className="text-white text-center">No hay proyectos para mostrar</div>
-                      )}
-                      
+                        {w.projects.length > 0 ? (
+                          <div className="flex flex-col w-full text-white">
+                            {w.projects.map((project, projectIndex) => (
+                              <div
+                                key={projectIndex}
+                                style={{ marginBottom: '10px' }}>
+                                <ProjectItem
+                                  context={setProjectId}
+                                  workSpaceid={w._id}
+                                  action={handleDeleteProject}
+                                  name={project.nameProject}
+                                  id={project._id}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-white text-center">No hay proyectos para mostrar</div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  ))
-                }
+                  ))}
                 </div>
               </div>
             </div>
           </nav>
-          <div className="content-end">  
-          {Open &&(
-              <div className="bg-white w-30 h-7 shadow-lg absolute flex justify-center items-center top-5 left-12">
-                <ul className="list-none list-inside">
-                  {
-                    Menus.map((menu)=>(
-                      <li className="p-2 text-lg  cursor-pointer hover:text-blue-500 text-center" onClick={()=>cerrarSesion()} key={menu}>{menu}</li>
-                      ))
-                  }
-                </ul>
-              </div>
-            )}
-            <button id="rot" onClick={()=>setOpen(!Open)} className='text-white p-4 text-xl absolute top-0 left-0'  style={{top: '10px'}}>
-              <FaGear id="engranaje" className={(Open?' rotate-45 ':'')+ 'duration-300'}/>
-            </button>
-          </div>
+
+        {/* CerrarSecion */}
+        <div className="content-end">
+          {Open && (
+            <div className="bg-white w-36 h-auto shadow-lg absolute flex justify-center items-center top-5 left-12 rounded-md overflow-hidden">
+              <ul className="list-none list-inside">
+                {Menus.map((menu) => (
+                  <li
+                    className="p-2 text-lg cursor-pointer border-b border-gray-200 transition duration-300 hover:bg-gray-100 hover:text-blue-500 text-center" // Added hover:bg-gray-100 and hover:text-blue-500
+                    onClick={() => cerrarSesion()}
+                    key={menu}
+                  >
+                    {menu}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <button
+            id="rot"
+            onClick={() => setOpen(!Open)}
+            className="text-white p-4 text-xl absolute top-0 left-0"
+            style={{ top: "10px" }}
+          >
+            <FaGear id="engranaje" className={(Open ? "rotate-45" : "") + " duration-300"} />
+          </button>
+        </div>
+
       </div>
     </div>
     {/*Button mobile */}
@@ -263,53 +311,3 @@ const Sidebar = () => {
 }
 
 export default Sidebar
-
-
-const dataSiderbar = `<div className=' flex items-center w-[100%]  flex-row  gap-4 text-white  p-2  transition-colors hover:bg-primary-900/50 rounded-xl'>
-<div className="hover:bg-primary-900/50 flex items-center  rounded-xl justify-around w-[80%] h-[100%]">
-  <button onClick={ocularCosas} className="flex px-4 justify-center items-center">
-    {(showItems)?<IoIosArrowDown />: <IoIosArrowForward />}
-      <FaFolderOpen className=" mx-1" />Proyectos
-  </button>
-</div>
-<button onClick={()=>{setIsopen(true)}}  className=" hover:bg-primary-900/50 flex items-center py-2 px-2 rounded-xl justify-around ">
-    <IoMdAdd />
-</button>
-{
-  isopen &&(
-        <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center ">
-          <form onSubmit={handleSubmitProject} className="bg-white p-5 rounded flex flex-col justify-center items-center gap-5">
-              <div className="flex flex-col h-[100%] w-[100%] justify-around justify-items-center items-center flex-wrap md:flex-nowrap ml-4">
-                <label className=" text-black">
-                 Escribe el nombre del proyecto
-                </label>
-                  <input name="nameProject" id="nameProject" onChange={(e)=>{setNewProject(e.target.value)}} type="text" className="w-64 px-4 border-2 border-gray-300 rounded-lg text-black focus:outline-none focus:border-indigo-500 duration-200" placeholder=" " />
-                  <div className="flex gap-4 mt-3">
-                      <button className="flex bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={()=>setIsopen(false)}>Cancelar</button>
-                      <button className="flex bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Crear Proyecto</button>
-                  </div>
-              </div>
-          </form>
-      </div>
-  )
-}
-</div>
-<div id="hidden">
-{searchProject.map((p, index) => (
-<div className=" w-full flex flex-row justify-between rounded-lg hover:bg-primary-900/50">
-  <button key={index} onClick={()=>{setProjectId(p._id)}} className='flex flex-row w-[90%] items-center gap-4 text-white py-2 px-6 rounded-xl hover:bg-primary-900/50 transition-colors'> 
-   <RiCheckboxMultipleBlankLine className=" w-[20%] "/>
-   <span className=" w-[80%]">{p.nameProject}</span>
-  </button>
-  <form onSubmit={handleDeleteProject} className=" flex  rounded-xl hover:bg-primary-900/50">
-    <input type="hidden" name="id" value={p._id} />
-    <button className=" py-2 px-6 h-full w-full">
-     <MdDelete className="text-red-500" />
-    </button>
-  </form>
-</div>
-))}
-</div>
-<form onSubmit={handleSubmitProject} className="w-56 m-auto flex flex-col">
-<input onChange={(e)=>{setNewProject(e.target.value)}} type="text" name="nameProject" id="nameProject" className="text-center bg-transparent hover:bg-gray-500/10 text-white" placeholder="+" />
-</form>`
