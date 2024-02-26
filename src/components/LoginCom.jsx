@@ -152,7 +152,7 @@ function LoginCom() {
               </div>
             </div>
             <ReCAPTCHA
-              sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
+              sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
               onChange={onChange}
             />
           <div className="mt-8 flex justify-between items-center">
