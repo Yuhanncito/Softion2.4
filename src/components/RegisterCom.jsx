@@ -81,28 +81,48 @@ function RegisterCom() {
   const canceLar = () => {
     navigate("/")
   }
-  
-  const handleChange = e =>{
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
-  }
-
-
-  const Login = () => {
-    navigate("/")
-  }
-
 
   
-  const prueba = e =>{
-    setTermsAccepted(e.target.checked);
-  }
+  /* Contraseña */
 
+  const [passwordStrength, setPasswordStrength] = useState(null);
+
+  const measurePasswordStrength = (password) => {
+    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  
+    const score = strengthRegex.test(password) ? (password.length / 8) * 100 : 0;
+  
+    if (score >= 80) {
+      return 'muy seguro';
+    } else if (score >= 40) {
+      return 'medio seguro';
+    } else {
+      return 'inseguro';
+    }
+  };
+  
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(prevForm => ({
+      ...prevForm,
+      [name]: value,
+      ...(name === 'password' && { passwordStrength: measurePasswordStrength(value) })
+    }));
+
+    if (name === 'password') {
+      const strength = measurePasswordStrength(value);
+      setPasswordStrength(strength);
+    }
+  };
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
+  }
+
+  
+/*Terminos y condiciones */
+  const prueba = e =>{
+    setTermsAccepted(e.target.checked);
   }
 
 
@@ -161,35 +181,40 @@ function RegisterCom() {
                 placeholder="Introduce tu correo electrónico" /> 
                 {errors.email && <p className="text-red-500 text-xs italic text-center">Introduce un correo electrónico válido.</p>}
             </div>
-            <div className='w-full flex flex-col '>
-              <label className="text-lg font-medium">Password</label>
-              <div className="relative w-full">
-                <input
-                  {...register('password', {
-                    required: true,
-                    minLength: 8,
-                    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  })}
-                  onChange={handleChange}
-                  type={showPassword ? "text" : "password"}
-                  name='password'
-                  className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent"
-                  placeholder="Introduce tu contraseña"
-                />
-                {showPassword ? (
-                  <FaRegEye onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
-                ) : (
-                  <FaRegEyeSlash onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
-                )}
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-xs italic text-center">
-                  La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un símbolo y un número.
-                </p>
+          <div className='w-full flex flex-col'>
+            <label className="text-lg font-medium">Password</label>
+            <div className="relative w-full">
+              <input
+                {...register('password', {
+                  required: true,
+                  minLength: 8,
+                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                })}
+                onChange={handleChange}
+                type={showPassword ? "text" : "password"}
+                name='password'
+                className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent"
+                placeholder="Introduce tu contraseña"
+              />
+              {showPassword ? (
+                <FaRegEye onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
+              ) : (
+                <FaRegEyeSlash onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
               )}
             </div>
+            {passwordStrength !== null && (
+              <p className={`text-sm mt-2 ${passwordStrength === 'inseguro' ? 'text-red-500' : passwordStrength === 'medio seguro' ? 'text-yellow-500' : 'text-green-500'} italic text-center`}>
+                La contraseña es {passwordStrength}
+              </p>
+            )}
+            {errors.password && (
+              <p className="text-red-500 text-xs italic text-center">
+                La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un símbolo y un número.
+              </p>
+            )}
+          </div>
 
-            
+              
             <div className="flex  justify-center mt-4 w-full">
                 <input type="checkbox" name="terms" id="terms" className="mr-2" onChange={prueba}/>
                 <label htmlFor="terms" className="text-sm font-medium">Acepto los términos y condiciones</label>
@@ -209,4 +234,5 @@ function RegisterCom() {
 }
 
 export default RegisterCom
+
 
