@@ -26,6 +26,7 @@ function LoginCom() {
   
 
   const loginFunction = async() => {
+    if(captchaValue){
     setOnSubtmit(!OnSubtmit)
     try{
       const res =   await fetch(CONFIGURACIONES.BASEURL+"/auth/signin", {
@@ -65,6 +66,14 @@ function LoginCom() {
     }
     
     if(count === 0) setOnSubtmit(true) 
+   }
+  else{
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: 'Realice primero el capcha para continuar',
+      }); 
+  }
   }
 
   const commingSon = () =>{
@@ -103,10 +112,10 @@ function LoginCom() {
   /*Captcha */
   function onChange(value) {
     console.log("Valor del ReCAPTCHA:", value);
-    setCaptchaValue(value);
+    setCaptchaValue(true);
   }
 
-  const [captchaValue, setCaptchaValue] = useState(null);
+  const [captchaValue, setCaptchaValue] = useState(false);
 
 
   return (
