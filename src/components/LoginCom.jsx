@@ -4,6 +4,7 @@ import {useForm} from 'react-hook-form'
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
 import { CONFIGURACIONES } from '../configs/confing';
+import ReCAPTCHA from "react-google-recaptcha";
 
 //Icons
 import { FaRegEye } from "react-icons/fa6";
@@ -93,14 +94,20 @@ function LoginCom() {
     });
   };
 
-  
-
-
   const [showPassword, setShowPassword] = useState(false);
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   }
+
+  /*Captcha */
+  function onChange(value) {
+    console.log("Valor del ReCAPTCHA:", value);
+    setCaptchaValue(value);
+  }
+
+  const [captchaValue, setCaptchaValue] = useState(null);
+
 
   return (
     
@@ -144,8 +151,11 @@ function LoginCom() {
                 )}
               </div>
             </div>
+            <ReCAPTCHA
+              sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
+              onChange={onChange}
+            />
           <div className="mt-8 flex justify-between items-center">
-              
               <Link className="font-medium text-base text-blue-600" to="/ForgetPass" >¿Olvidaste tu contraseña?</Link>
           </div>
         
@@ -154,7 +164,7 @@ function LoginCom() {
               <p className="font-medium text-base">¿No tengo cuenta?</p>
               <Link className=" text-blue-600 text-base font-medium ml-2" to='/Register' >Regístrate ahora</Link>
           </div>
-          <button type="submit" disabled={OnSubtmit} className=" disabled:bg-blue-100 disabled:cursor-not-allowed  active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 rounded-xl bg-blue-600 text-white text-lg font-bold w-[100%] mt-5">iniciar sesión</button>
+          <button type="submit" disabled={OnSubtmit || !captchaValue} className=" disabled:bg-blue-100 disabled:cursor-not-allowed  active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 rounded-xl bg-blue-600 text-white text-lg font-bold w-[100%] mt-5">iniciar sesión</button>
         </form>
         <div className="mt-8 flex flex-col gap-y-4">
               
