@@ -105,7 +105,7 @@ function LoginCom() {
   return (
     
     <div className="bg-white px-10 py-20 md:w-[600px] rounded-3xl shadow-xl border-2 border-gray-100">
-      <h1 className="text-5xl font-semibold max-sm:flex max-sm:flex-col max-sm:border-b-2 max-sm:pb-5">Bienvenido a aa<span className=' text-4xl font-bold'>SoftionPro</span></h1>
+      <h1 className="text-5xl font-semibold max-sm:flex max-sm:flex-col max-sm:border-b-2 max-sm:pb-5">Bienvenido a<span className=' text-4xl font-bold'>SoftionPro</span></h1>
       <div className="mt-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
