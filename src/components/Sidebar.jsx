@@ -172,7 +172,7 @@ const Sidebar = () => {
           <h1 className='text-xl text-white font-bold'>SoftionPro</h1>
         </div>
       {/* Nav */}
-      <div className='bg-primary-100 p-8 rounded-tr-[100px] h-[70vh] overflow-y-scroll flex flex-col justify-between gap-8' style={{ scrollbarWidth: 'thin', scrollbarColor: 'grey transparent' }}>
+      <div  className='bg-primary-100 p-8 rounded-tr-[100px] h-screen overflow-y-scroll flex flex-col justify-between gap-8 ' style={{ scrollbarWidth: 'thin', scrollbarColor: 'grey transparent' }}>
           <style>
             {`
               ::-webkit-scrollbar {
