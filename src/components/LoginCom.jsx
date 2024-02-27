@@ -20,6 +20,8 @@ function LoginCom() {
   const {setGeneralData} = useUserContext();
 
   const [OnSubtmit, setOnSubtmit] = useState(false)
+  const [countIntent, setCountIntent] = useState(1)
+
 
   const { handleSubmit, register, formState: { errors } } = useForm();
 
@@ -65,7 +67,10 @@ function LoginCom() {
       setOnSubtmit(false);
     }
     
-    if(count === 0) setOnSubtmit(true) 
+    if(count === 0 && countIntent < 3) {
+      setOnSubtmit(true)
+      setTimeout(removeBlock, countIntent*0.2*60*1000);
+    }
    }
   else{
       Swal.fire({
@@ -74,6 +79,15 @@ function LoginCom() {
         text: 'Realice primero el capcha para continuar',
       }); 
   }
+  }
+
+  const removeBlock=()=>{
+        console.log(" cambiao ")
+        setCount(5);
+        setOnSubtmit(false);
+        setCountIntent(countIntent++)
+        console.log(count)
+        console.log(countIntent)
   }
 
   const commingSon = () =>{
@@ -111,7 +125,6 @@ function LoginCom() {
 
   /*Captcha */
   function onChange(value) {
-    console.log("Valor del ReCAPTCHA:", value);
     setCaptchaValue(true);
   }
 
@@ -121,7 +134,7 @@ function LoginCom() {
   return (
     
     <div className="bg-white px-10 py-20 md:w-[600px] rounded-3xl shadow-xl border-2 border-gray-100">
-      <h1 className="text-5xl font-semibold max-sm:flex max-sm:flex-col max-sm:border-b-2 max-sm:pb-5">Bienvenido a<span className=' text-4xl font-bold'>SoftionPro</span></h1>
+      <h1 className="text-5xl font-semibold max-sm:flex max-sm:flex-col max-sm:border-b-2 max-sm:pb-5">Bienvenido a <span className=' text-4xl font-bold'>SoftionPro</span></h1>
       <div className="mt-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
@@ -162,7 +175,7 @@ function LoginCom() {
             </div>
             <ReCAPTCHA
               sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
-              // sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
+               //sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
               onChange={onChange}
             />
           <div className="mt-8 flex justify-between items-center">
