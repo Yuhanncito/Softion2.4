@@ -10,14 +10,10 @@ import AutoSizer from "react-virtualized-auto-sizer";
 const cookies = new Cookies();
 
 //icons
-import { RiCheckboxMultipleBlankLine } from "react-icons/ri";
 import { FaGear } from "react-icons/fa6";
 import { CiMenuBurger } from "react-icons/ci";
 import { IoCloseSharp } from "react-icons/io5";
-import { IoMdAdd } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
-import { FaFolderOpen } from "react-icons/fa6";
-import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
 import { CONFIGURACIONES } from "../configs/confing";
 import ProjectItem from "./ProjectItem";
@@ -42,7 +38,6 @@ const Sidebar = () => {
 
   const [visibleWorkspaces, setVisibleWorkspaces] = useState([]);
   
-
 
   const cerrarSesion= async ()=>{
      cookies.remove("x-access-user")
