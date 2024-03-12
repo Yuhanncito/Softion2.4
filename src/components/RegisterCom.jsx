@@ -213,6 +213,20 @@ function RegisterCom() {
               </p>
             )}
           </div>
+          <div className='w-full flex flex-col'>
+            <label htmlFor="secret" className="text-lg font-medium">Pregunta secreta</label>
+              <select {...register('secret', { required: true, validate: value => value !== "default" })} name="secret" id="secret" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent">
+                <option value="default">Selecciona tu pregunta</option>
+                <option value="colorFavorito">¿Cuál es tu color favorito?</option>
+                <option value="nombreMascota">¿Cómo se llama tu primera mascota?</option>
+                <option value="ciudadNacimiento">¿En qué ciudad naciste?</option>
+                <option value="comidaFavorita">¿Cuál es tu comida favorita?</option>
+              </select>
+              {errors.secret && <p className="text-red-500 text-xs italic text-center">Por favor, selecciona una pregunta.</p>}
+              <label htmlFor="respuestaSecreta" className="text-lg font-medium">Respuesta</label>
+              <input {...register('respuestaSecreta', { required: true })} type="text" name="respuestaSecreta" id="respuestaSecreta" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent"/>
+              {errors.respuestaSecreta && <p className="text-red-500 text-xs italic text-center">Este campo es requerido.</p>}
+          </div>
 
               
             <div className="flex  justify-center mt-4 w-full">
@@ -221,7 +235,7 @@ function RegisterCom() {
             </div>
 
             <div className="mt-8 flex gap-x-4 justify-center w-full">
-                <button className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold" onClick={()=>canceLar()}>Cancelar</button>
+                <Link to={"/"} className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold" >Cancelar</Link>
                 <button type="submit" disabled={OnSubmit} name='regis' className="disabled:bg-blue-100 disabled:cursor-not-allowed active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" >Registrar</button>
             </div>
             <div className="mt-8 flex justify-center items-center w-full">

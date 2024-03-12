@@ -17,17 +17,53 @@ function ResetPass() {
   const cookies = new Cookies();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
   const { handleSubmit, register , formState: { errors } } = useForm();
 
-  const onSubmit = (data) =>{
+  const onSubmit = async (data) =>{
+    if(data.password !== data.confirmPassword) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: 'Las contraseñas no coinciden',
+      });
+      return;
+    }
     console.log(data);
+    try{
+      const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/forgotPassword/update",{
+        method:"PUT",
+        headers:{
+          'Content-Type': 'application/json',
+          'x-access-token': cookies.get('x-access-user')
+        },
+        body:JSON.stringify({
+          email: generalData.email,
+          password: form.password
+        })
+      });
+      const json = await response.json();
+
+      cookies.set('x-access-user', json.token);
+    
+      navigate('/App')
+
+    }
+    catch (err){
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: 'Error interno 500',
+      });
+    }
   }
 
   const [form, setForm] = useState({
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   
   const canceLar = () => {
@@ -64,42 +100,12 @@ function ResetPass() {
     }
   };
 
-  const resetPass = async () =>{
-
-    try{
-      const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/forgotPassword/update",{
-        method:"PUT",
-        headers:{
-          'Content-Type': 'application/json',
-          'x-access-token': cookies.get('x-access-user')
-        },
-        body:JSON.stringify({
-          email: generalData.email,
-          password: form.password
-        })
-      });
-      const json = await response.json();
-
-      cookies.set('x-access-user', json.token);
-    
-      navigate('/App')
-
-    }
-    catch (err){
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: 'Error interno 500',
-      });
-    }
-  }
-
-  const Login = () => {
-    navigate("/")
-  }
-
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
+  }
+
+  const handleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   }
   
   return (
@@ -108,7 +114,7 @@ function ResetPass() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex shadow-xl bg-white w-[90%] h-[70%] md:w-[50%] md:h-[60%] flex-col items-center justify-center">
             <h1 className="text-5xl font-semibold text-center">Nueva contraseña</h1>
             <div className='w-[80%] flex flex-col mt-10 mx-auto max-w-md'>
-                <label className="text-lg font-medium ml-2">Password</label>
+                <label className="text-lg font-medium ml-2">Contraseña</label>
                
                 <div className="relative w-full">
               <input
@@ -129,6 +135,26 @@ function ResetPass() {
                 <FaRegEyeSlash onClick={handleShowPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
               )}
             </div>
+            <label className="text-lg font-medium ml-2 mt-4">Confirmar Contraseña</label>
+            <div className="relative w-full">
+              <input
+                {...register('confirmPassword', {
+                  required: true,
+                  minLength: 8,
+                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                })}
+                onChange={handleChange}
+                type={showConfirmPassword ? "text" : "password"}
+                name='confirmPassword'
+                className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent"
+                placeholder="Confirma tu contraseña"
+              />
+              {showConfirmPassword ? (
+                <FaRegEye onClick={handleShowConfirmPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
+              ) : (
+                <FaRegEyeSlash onClick={handleShowConfirmPassword} className="absolute inset-y-0 right-0 mr-4 my-auto hover:cursor-pointer" />
+              )}
+            </div>
             {passwordStrength !== null && (
               <p className={`text-sm mt-2 ${passwordStrength === 'inseguro' ? 'text-red-500' : passwordStrength === 'medio seguro' ? 'text-yellow-500' : 'text-green-500'} italic text-center`}>
                 La contraseña es {passwordStrength}
@@ -142,10 +168,10 @@ function ResetPass() {
             </div>
             <div className="mt-8 flex gap-x-4 justify-center w-full">
                 <button className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold" onClick={()=>canceLar()}>Cancelar</button>
-                <button type="submit" name='regis' className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" onClick={resetPass} >Ingresar</button>
+                <button type="submit" name='regis' className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" >Ingresar</button>
             </div>
             <div className="mt-8 flex justify-center items-center w-full">
-              <p className="font-medium text-base">Ya tienes una cuenta?</p>
+              <p className="font-medium text-base">¿Ya tienes una cuenta?</p>
               <button className=" text-blue-600 text-base font-medium ml-2" onClick={()=>Login()} >Ingresa</button>
           </div>
         </form>
