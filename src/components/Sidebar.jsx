@@ -84,26 +84,21 @@ const Sidebar = () => {
   };
 
     const  handleDeleteProject = async (e) => {
+      e.preventDefault()
       try {
         const formulario = new FormData(e.target)
-        const response = await fetch(CONFIGURACIONES.BASEURL+"/projects/delete",{
+        const idProject=formulario.get('id')
+        const response = await fetch(CONFIGURACIONES.BASEURL+`/projects/${idProject}`,{
           headers:{
             'Content-Type':'application/json',
             'x-access-token':cookies.get("x-access-user")
           },
           method:'DELETE',
-          body:JSON.stringify({
-            idProject:formulario.get('id'),
-            workSpaceid:formulario.get('idWorkSpace')
-          })
         })
-        const parse = await response.json();
-        if(parse.message !== "ok") e.preventDefault();
-         
       } catch (error) {
         console.log(error)
       }
-      
+      finally{getData()}
     }
 
     const getData = async() =>{

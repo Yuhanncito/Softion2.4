@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import PropTypes from 'prop-types';
 
 function Canva() {
   const [tasks, setTasks] = useState([
@@ -13,6 +14,8 @@ function Canva() {
     { id: 7, name: 'Tarea 7', status: 'Completado', date: '2024-02-29' },
     { id: 8, name: 'Tarea 8', status: 'Completado', date: '2024-02-29' },
   ]);
+
+  const dropRef = useRef(null);
 
   function moveTask(fromIndex, toIndex, newStatus) {
     const updatedTasks = [...tasks];
@@ -38,9 +41,9 @@ function Canva() {
     )}
 
     {/* Columna Pendiente */}
-    <div className="flex-1 p-4 overflow-y-auto"> {/* Añade overflow-y-auto aquí */}
+    <div className="flex-1 p-4 overflow-y-auto "> {/* Añade overflow-y-auto aquí */}
       <h1 className="text-xl font-bold mb-4">Pendiente</h1>
-      <div className="bg-gray-100 h-64">
+      <div className="bg-gray-100 h-64" ref={dropRef}>
         {tasks.map((task, index) => {
           if (task.status === 'Pendiente') {
             return (
@@ -60,7 +63,7 @@ function Canva() {
     {/* Columna Iniciado */}
     <div className="flex-1 p-4 overflow-y-auto"> {/* Añade overflow-y-auto aquí */}
       <h1 className="text-xl font-bold mb-4">Iniciado</h1>
-      <div className="bg-gray-100 h-64">
+      <div className="bg-gray-100 h-64" ref={dropRef}>
         {tasks.map((task, index) => {
           if (task.status === 'Iniciado') {
             return (
@@ -80,7 +83,7 @@ function Canva() {
     {/* Columna Completado */}
     <div className="flex-1 p-4 overflow-y-auto"> {/* Añade overflow-y-auto aquí */}
       <h1 className="text-xl font-bold mb-4">Completado</h1>
-      <div className="bg-gray-100 h-64">
+      <div className="bg-gray-100 h-64" ref={dropRef}>
         {tasks.map((task, index) => {
           if (task.status === 'Completado') {
             return (
@@ -102,11 +105,6 @@ function Canva() {
   );
 }
 
-const canDrop = (item, monitor) => {
-  const columnStatus = monitor.getItem().status;
-  return item.type === 'TASK' && (columnStatus === '' || columnStatus === item.status || item.status === '');
-};
-
 function Task({ task, index, moveTask }) {
   const [{ isDragging }, drag] = useDrag({
     type: 'TASK',
@@ -115,7 +113,6 @@ function Task({ task, index, moveTask }) {
 
   const [, drop] = useDrop({
     accept: 'TASK',
-    canDrop,
     hover: (item) => {
       if (item.index !== index) {
         moveTask(item.index, index, task.status);
@@ -127,7 +124,7 @@ function Task({ task, index, moveTask }) {
   return (
     <div
       ref={(node) => drag(drop(node))}
-      className={`bg-gray-200 p-4 rounded mb-4 cursor-move ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-gray-200 p-4 shadow-lg border-2 border-black/20 rounded mb-4 cursor-move ${isDragging ? 'opacity-50' : ''} hover:scale-105 transition-all duration-500`}
     >
       <p className="text-lg font-bold mb-2">{task.name}</p>
       <p className="text-sm text-gray-500">Fecha: {task.date}</p>
@@ -135,4 +132,16 @@ function Task({ task, index, moveTask }) {
   );
 }
 
+Task.propTypes = {
+  task: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    date: PropTypes.string.isRequired,
+  }).isRequired,
+  index: PropTypes.number.isRequired,
+  moveTask: PropTypes.func.isRequired,
+};
+
 export default Canva;
+
