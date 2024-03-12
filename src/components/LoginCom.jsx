@@ -21,17 +21,14 @@ function LoginCom() {
 
   const [OnSubtmit, setOnSubtmit] = useState(false)
   const [countIntent, setCountIntent] = useState(1)
-
-
-  const { handleSubmit, register, formState: { errors } } = useForm();
-
   
+  const { handleSubmit, register, formState: { errors } } = useForm();
 
   const loginFunction = async() => {
     if(captchaValue){
     setOnSubtmit(!OnSubtmit)
     try{
-      const res =   await fetch(CONFIGURACIONES.BASEURL+"/auth/signin", {
+      const res = await fetch(CONFIGURACIONES.BASEURL+"/auth/signin", {
         method:'POST',
         headers:{
           'Content-Type': 'application/json',
@@ -125,7 +122,7 @@ function LoginCom() {
 
   /*Captcha */
   function onChange(value) {
-    setCaptchaValue(true);
+    setCaptchaValue(!captchaValue);
   }
 
   const [captchaValue, setCaptchaValue] = useState(false);
@@ -174,9 +171,10 @@ function LoginCom() {
               </div>
             </div>
             <ReCAPTCHA
-              sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
-              //  sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
+              //sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
+              sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
               onChange={onChange}
+              onExpired={onChange}
             />
           <div className="mt-8 flex justify-between items-center">
               <Link className="font-medium text-base text-blue-600" to="/ForgetPass" >¿Olvidaste tu contraseña?</Link>
