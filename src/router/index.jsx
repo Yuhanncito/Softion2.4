@@ -3,7 +3,8 @@ import Login from "../Login";
 import Sidebar from "../App";
 //import List from "../components/List";
 import Ctarea from "../components/createTarea"
-import Canva from "../components/canva";
+import Canva from "../views/Canva";
+import Canva2 from "../components/canva";
 import RegisterCom from "../components/RegisterCom";
 import ForgetPassword from "../components/ForgetPassword"
 import NotFound from "../components/NotFound";
@@ -14,6 +15,7 @@ import ResetPass from "../components/ResetPass";
 import List from "../components/List";
 import Gantt from "../components/Gantt";
 import Gantt2 from "../views/Gantt";
+import ForgetSecret from "../components/ForgetSecret";
 
 
 export const router = createBrowserRouter([
@@ -48,6 +50,14 @@ export const router = createBrowserRouter([
         element: <ResetPass />
       },
       {
+        path: "/pruebaCanva",
+        element: <Canva />
+      },
+      {
+        path: "/ForgetSecret",
+        element: <ForgetSecret />
+      },
+      {
         path: "/",
         element: <LayoutPrivate />,
         children: [
@@ -66,7 +76,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/Canva",
-                element: <Canva />
+                element: <Canva2 />
               },
               {
                 path: "/createTarea",
