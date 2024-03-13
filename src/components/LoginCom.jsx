@@ -171,13 +171,8 @@ function LoginCom() {
               </div>
             </div>
             <ReCAPTCHA
-<<<<<<< HEAD
               // sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
               sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
-=======
-              sitekey="6Lcl4X8pAAAAAKtRJhdkFovBfKMdNE9K7NuuFiPw"
-              // sitekey="6LfV2H8pAAAAAG_Zgty-Nx16jZmj8ho-HaA5Gmga"
->>>>>>> 07ed33f870e97be0d79fabc42cc67229bb3fbdb6
               onChange={onChange}
               onExpired={onChange}
             />

@@ -55,7 +55,11 @@ function ForgetSecret() {
         navigate('/App')
         
       } catch (error) {
-        
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error,
+        });
       }
     }
 
