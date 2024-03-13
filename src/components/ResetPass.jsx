@@ -66,9 +66,6 @@ function ResetPass() {
     confirmPassword: ''
   });
   
-  const canceLar = () => {
-    navigate("/")
-  }
   /*Contraseña */
   const [passwordStrength, setPasswordStrength] = useState(null);
 
@@ -167,7 +164,7 @@ function ResetPass() {
             )}
             </div>
             <div className="mt-8 flex gap-x-4 justify-center w-full">
-                <button className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold" onClick={()=>canceLar()}>Cancelar</button>
+                <Link to={"/"} className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold">Cancelar</Link>
                 <button type="submit" name='regis' className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" >Ingresar</button>
             </div>
             <div className="mt-8 flex justify-center items-center w-full">
