@@ -16,6 +16,7 @@ import List from "../components/List";
 import Gantt from "../components/Gantt";
 import Gantt2 from "../views/Gantt";
 import ForgetSecret from "../components/ForgetSecret";
+import TaskForm from "../components/TaskForm";
 
 
 export const router = createBrowserRouter([
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
               {
                 path: "/createTarea",
                 element: <Ctarea />
+              },
+              {
+                path: "/TaskForm",
+                element: <TaskForm />
               }
           ]
       }

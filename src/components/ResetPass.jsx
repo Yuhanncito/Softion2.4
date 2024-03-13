@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
@@ -66,9 +66,6 @@ function ResetPass() {
     confirmPassword: ''
   });
   
-  const canceLar = () => {
-    navigate("/")
-  }
   /*Contraseña */
   const [passwordStrength, setPasswordStrength] = useState(null);
 
@@ -167,12 +164,12 @@ function ResetPass() {
             )}
             </div>
             <div className="mt-8 flex gap-x-4 justify-center w-full">
-                <button className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold" onClick={()=>canceLar()}>Cancelar</button>
+                <Link to={"/"} className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-red-600 text-white text-lg font-bold">Cancelar</Link>
                 <button type="submit" name='regis' className="active:scale-[.98] active:duration-75 transition-all hover:scale-[1.01] ease-in-out py-3 pr-5 pl-5 rounded-xl bg-blue-600 text-white text-lg font-bold" >Ingresar</button>
             </div>
             <div className="mt-8 flex justify-center items-center w-full">
               <p className="font-medium text-base">¿Ya tienes una cuenta?</p>
-              <button className=" text-blue-600 text-base font-medium ml-2" onClick={()=>Login()} >Ingresa</button>
+              <Link to={"/"} className=" text-blue-600 text-base font-medium ml-2" >Ingresa</Link>
           </div>
         </form>
       </div>

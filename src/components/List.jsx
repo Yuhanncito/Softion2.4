@@ -3,6 +3,7 @@ import { useUserContext } from '../context/UseContext';
 import { CONFIGURACIONES } from '../configs/confing';
 import Cookies from 'universal-cookie';
 import { GrClose } from "react-icons/gr";
+import TaskForm from './TaskForm';
 
 
 function List() {
@@ -130,7 +131,7 @@ function List() {
         {Data &&
           Data.map((task, index) => (
             <div key={index} className="w-full flex flex-row hover:bg-gray-500/50 border-b-2 transition-colors duration-75">
-              <div className="w-[35%] py-2 px-5">
+              <div className="w-[35%] py-2 px-5 cursor-pointer" onClick={()=>handleOpenModal(task)}>
                 <p className="hover:bg-gray-300 py-1 px-5 rounded-md bg-transparent w-full focus:outline-none focus:bg-gray-200">{task.nameTask}</p>
               </div>
               <div className="w-[20%] border-6 border-red-500">
@@ -145,85 +146,16 @@ function List() {
 
               {
                 show &&(    
-                <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
-                  <div className={`bg-white h-[60%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${show ? '' : 'hidden'}`}>
+                  <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
+                  <div id='Contenedor' className={`bg-white h-[65%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${show ? '' : 'hidden'}`}>
                     <div className="flex justify-end">
-                      <button onClick={() => setShow(!show)} className="hover:bg-red-500 p-2 rounded-full">
-                        <GrClose className="font-bold text-2xl text-white" />
+                      <button onClick={() => setShow(!show)} className="hover:bg-red-500 text-white p-2 rounded-full">
+                        <GrClose className="font-bold text-2xl text-black" />
                       </button>
                     </div>
-                    <h2 className="text-3xl font-bold mb-6">Editar Tarea</h2>
-                    <form onSubmit={handleUpdate}>
-                      <div className="mb-4">
-                        <label htmlFor="taskName" className="block text-sm font-medium text-gray-600">
-                          Nombre de la Tarea:
-                        </label>
-                        <input
-                          type="text"
-                          id="taskName"
-                          name="nameTask"
-                          value={selectedTask.nameTask}
-                          onChange={handleModalChange}
-                          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="hours" className="block text-sm font-medium text-gray-600">
-                          Horas para terminar:
-                        </label>
-                        <input
-                          type="number"
-                          id="hours"
-                          name="hours"
-                          value={selectedTask.hours || ''}
-                          onChange={handleModalChange}
-                          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="assignees" className="block text-sm font-medium text-gray-600">
-                          Encargados:
-                        </label>
-                        <input
-                          type="text"
-                          id="assignees"
-                          name="assignees"
-                          value={selectedTask.assignees || ''}
-                          onChange={handleModalChange}
-                          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-600">
-                          Descripción:
-                        </label>
-                        <textarea
-                          id="description"
-                          name="description"
-                          value={selectedTask.description || ''}
-                          onChange={handleModalChange}
-                          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-600">
-                          Estado:
-                        </label>
-                        <select
-                          id="status"
-                          name="status"
-                          value={selectedTask.status || 'pendiente'}
-                          onChange={handleModalChange}
-                          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-                        >
-                          <option value="pendiente">Pendiente</option>
-                          {/* Agrega más opciones según tus necesidades */}
-                        </select>
-                      </div>
-                      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
-                        Guardar Cambios
-                      </button>
-                    </form>
+
+                    <TaskForm handleChange={handleModalChange} tarea = {selectedTask} method={handleUpdate} />
+
                   </div>
                 </div>)
               }
