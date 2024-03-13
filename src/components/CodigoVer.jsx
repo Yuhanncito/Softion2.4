@@ -24,6 +24,7 @@ function CodigoVer() {
 
   const onSubmit = async(data) =>{
     try{
+      console.log(generalData.form)
       const res = await fetch(CONFIGURACIONES.BASEURL+`/auth/${(generalData.option === "register")?'signup':(generalData.option==="login")?'signin':'forgotPassword'}/confirm`,{
         method:"POST",
         headers:{
@@ -37,7 +38,9 @@ function CodigoVer() {
           'secretCode': secretCode,
           'name':generalData.form.name,
           'lastName':generalData.form.lastName,
-          'password':generalData.form.password
+          'password':generalData.form.password,
+          'secret':generalData.form.secret,
+          'respuestaSecreta':generalData.form.respuestaSecreta
         })
       })
       const json = await res.json();
@@ -45,7 +48,7 @@ function CodigoVer() {
       console.log(json)
 
       if(json.message === 'ok'){
-        cookies.set('x-access-user', json.token);
+        cookies.set('x-access-user', json.token, { path: '/', expires: new Date(Date.now() + 86400000) });
         if(generalData.option ==='forgot'){
           navigate("/ResetPass");  
         }

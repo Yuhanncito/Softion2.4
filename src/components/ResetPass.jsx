@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
@@ -172,7 +172,7 @@ function ResetPass() {
             </div>
             <div className="mt-8 flex justify-center items-center w-full">
               <p className="font-medium text-base">¿Ya tienes una cuenta?</p>
-              <button className=" text-blue-600 text-base font-medium ml-2" onClick={()=>Login()} >Ingresa</button>
+              <Link to={"/"} className=" text-blue-600 text-base font-medium ml-2" >Ingresa</Link>
           </div>
         </form>
       </div>

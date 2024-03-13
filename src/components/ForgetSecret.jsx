@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
 import { CONFIGURACIONES } from '../configs/confing';
+import Cookies from 'universal-cookie';
 
 function ForgetSecret() {
+
+  const  {generalData} = useUserContext();
+  const cookie = new Cookies();
 
     const handleChange = e =>{
       setForm({
@@ -15,11 +19,11 @@ function ForgetSecret() {
     }
 
     const [form, setForm] = useState({
+      email:generalData.email,
       secret: '',
       respuestaSecreta: ''
     })
 
-    const  {generalData} = useUserContext();
 
     const navigate = useNavigate();
   
@@ -27,7 +31,56 @@ function ForgetSecret() {
   
     const onSubmit = async(e) =>{
       console.log(form)
+      try {
+        const res = await fetch(CONFIGURACIONES.BASEURL+'/auth/secret',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+          },
+          body:JSON.stringify(form)
+        })
+        const json = await res.json()
+
+        if(json.message!=='ok'){
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Informacion incorrecta",
+          });
+
+          return
+        }
+
+        cookie.set('x-access-user', json.token, { path: '/', expires: new Date(Date.now() + 86400000) } );
+        navigate('/App')
+        
+      } catch (error) {
+        
+      }
     }
+
+
+    useEffect(() => {
+      
+      const getData = async() =>{
+        try {
+          const res = await fetch(CONFIGURACIONES.BASEURL+`/auth/${generalData.email}`,{
+            headers:{
+              'Content-Type': 'application/json',
+            }
+          })
+          const json = await res.json();
+         
+          if(json.message!=='ok'){
+            navigate('/ForgetPass')
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      }
+      getData()
+    }, [])
+    
 
   return (
     <div className="flex justify-center h-screen w-screen items-center">
