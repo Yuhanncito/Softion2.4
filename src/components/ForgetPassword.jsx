@@ -42,8 +42,25 @@ function ForgetPassword() {
       }
     }
     else if(metodoRecuperacion === "preguntaSecreta"){
-      setGeneralData({email:form.email})
-      navigate("/ForgetSecret")
+      try{
+        const res = await fetch(CONFIGURACIONES.BASEURL+`/auth/${form.email}`,{
+          headers:{
+            'Content-Type': 'application/json',
+          }
+        })
+        const json = await res.json();
+
+        if(json.message !== 'ok'){
+          console.log(json);
+        }
+        else{
+          console.log(json.data[0])
+          setGeneralData(json.data[0])
+          navigate("/ForgetSecret")
+        }
+      }catch(err){
+        console.log(err)
+      }
     }
   }
 

@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {useUserContext} from '../context/UseContext'
 import Swal from 'sweetalert2'
 import { CONFIGURACIONES } from '../configs/confing';
+import Cookies from 'universal-cookie';
 
 function ForgetSecret() {
+
+  const  {generalData, setGeneralData} = useUserContext();
+  const cookie = new Cookies();
+
+  const [quest, setQuest] = useState([])
 
     const handleChange = e =>{
       setForm({
@@ -15,11 +21,11 @@ function ForgetSecret() {
     }
 
     const [form, setForm] = useState({
-      secret: '',
+      email:generalData.email,
+      secret: generalData.questionKey[0].key,
       respuestaSecreta: ''
     })
 
-    const  {generalData} = useUserContext();
 
     const navigate = useNavigate();
   
@@ -27,23 +33,57 @@ function ForgetSecret() {
   
     const onSubmit = async(e) =>{
       console.log(form)
+      try {
+        const res = await fetch(CONFIGURACIONES.BASEURL+'/auth/secret',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+          },
+          body:JSON.stringify(form)
+        })
+        const json = await res.json()
+
+        if(json.message!=='ok'){
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Informacion incorrecta",
+          });
+
+          return
+        }
+        const response = await fetch(CONFIGURACIONES.BASEURL+"/auth/forgotPassword",{
+          method:"POST",
+          headers:{
+            'Content-Type': 'application/json'
+          },
+          body:JSON.stringify(form)
+        });
+        setGeneralData({option:'forgot',email:form.email})
+        navigate("/CodigoVer")
+        console.log(json)
+        
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error,
+        });
+      }
     }
+    
+    
+    
 
   return (
     <div className="flex justify-center h-screen w-screen items-center">
     <form onSubmit={handleSubmit(onSubmit)} className="flex bg-white flex-col w-[90%] shadow-xl rounded-2xl lg:w-[50%] h-[60%] px-10 items-center justify-center">
         <h1 className="md:text-5xl text-4xl font-semibold text-center">Recuperación de Contraseña</h1>
-        <h1 className="md:text-5xl text-4xl font-semibold text-center">Usuario {generalData.email}</h1>
+        <h1 className="md:text-5xl text-4xl font-semibold text-center">Usuario {generalData.name}</h1>
         <div className='w-full flex flex-col'>
             <label htmlFor="secret" className="text-lg font-medium">Pregunta secreta</label>
-              <select {...register('secret', { required: true, validate: value => value !== "default" })} name="secret" id="secret" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" onChange={handleChange}>
-                <option value="default">Selecciona tu pregunta</option>
-                <option value="colorFavorito">¿Cuál es tu color favorito?</option>
-                <option value="nombreMascota">¿Cómo se llama tu primera mascota?</option>
-                <option value="ciudadNacimiento">¿En qué ciudad naciste?</option>
-                <option value="comidaFavorita">¿Cuál es tu comida favorita?</option>
-              </select>
-              {errors.secret && <p className="text-red-500 text-xs italic text-center">Por favor, selecciona una pregunta.</p>}
+              <input type="text" name="questionName" className="text-lg font-medium" id="questionName" value={generalData.questionKey[0].question} disabled/>
+              <input type="hidden" name="questionKey" value={generalData.questionKey[0].key}/>
               <label htmlFor="respuestaSecreta" className="text-lg font-medium">Respuesta</label>
               <input {...register('respuestaSecreta', { required: true })} type="text" name="respuestaSecreta" id="respuestaSecreta" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" onChange={handleChange}/>
               {errors.respuestaSecreta && <p className="text-red-500 text-xs italic text-center">Este campo es requerido.</p>}

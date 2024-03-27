@@ -24,6 +24,7 @@ function RegisterCom() {
   const {setGeneralData} = useUserContext();
 
   const onSubmit = async () =>{
+ 
     if (termsAccepted) {
       setOnSubmit(!OnSubmit);
       try {
@@ -75,7 +76,9 @@ function RegisterCom() {
     email: '',
     password: '',
     lastName:'',
-    name:''
+    name:'',
+    secret:'',
+    respuestaSecreta:'',
   });
   
   const canceLar = () => {
@@ -215,7 +218,7 @@ function RegisterCom() {
           </div>
           <div className='w-full flex flex-col'>
             <label htmlFor="secret" className="text-lg font-medium">Pregunta secreta</label>
-              <select {...register('secret', { required: true, validate: value => value !== "default" })} name="secret" id="secret" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent">
+              <select {...register('secret', { required: true, validate: value => value !== "default" })} name="secret" id="secret" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" onChange={handleChange}>
                 <option value="default">Selecciona tu pregunta</option>
                 <option value="colorFavorito">¿Cuál es tu color favorito?</option>
                 <option value="nombreMascota">¿Cómo se llama tu primera mascota?</option>
@@ -224,7 +227,7 @@ function RegisterCom() {
               </select>
               {errors.secret && <p className="text-red-500 text-xs italic text-center">Por favor, selecciona una pregunta.</p>}
               <label htmlFor="respuestaSecreta" className="text-lg font-medium">Respuesta</label>
-              <input {...register('respuestaSecreta', { required: true })} type="text" name="respuestaSecreta" id="respuestaSecreta" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent"/>
+              <input {...register('respuestaSecreta', { required: true })} type="text" name="respuestaSecreta" id="respuestaSecreta" className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent" onChange={handleChange}/>
               {errors.respuestaSecreta && <p className="text-red-500 text-xs italic text-center">Este campo es requerido.</p>}
           </div>
 
