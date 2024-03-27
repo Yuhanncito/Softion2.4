@@ -17,8 +17,8 @@ import Gantt from "../components/Gantt";
 import Gantt2 from "../views/Gantt";
 import ForgetSecret from "../components/ForgetSecret";
 import TaskForm from "../components/TaskForm";
-import ProMate from "../views/Prototipos/ProMate";
-import Mate from "../views/Prototipos/Mate";
+//import ProMate from "../views/Prototipos/ProMate";
+//import Mate from "../views/Prototipos/Mate";
 
 
 
@@ -60,14 +60,6 @@ export const router = createBrowserRouter([
       {
         path: "/ForgetSecret",
         element: <ForgetSecret />
-      },
-      {
-        path: "/ProMate",
-        element: <ProMate />
-      },
-      {
-        path: "/Mate",
-        element: <Mate />
       },
       {
         path: "/",
