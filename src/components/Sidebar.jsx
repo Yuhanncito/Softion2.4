@@ -94,7 +94,13 @@ const Sidebar = () => {
             'x-access-token':cookies.get("x-access-user")
           },
           method:'DELETE',
+          body:JSON.stringify({
+            workspaceid:formulario.get('idWorkSpace')
+          })
         })
+
+        const json = await response.json();
+        console.log(json);
       } catch (error) {
         console.log(error)
       }
@@ -167,7 +173,7 @@ const Sidebar = () => {
           <h1 className='text-xl text-white font-bold'>SoftionPro</h1>
         </div>
       {/* Nav */}
-      <div  className='bg-primary-100 p-8 rounded-tr-[100px] h-screen overflow-y-scroll flex flex-col justify-between gap-8 ' style={{ scrollbarWidth: 'thin', scrollbarColor: 'grey transparent' }}>
+      <div  className='bg-primary-100 p-8 rounded-tr-[100px] h-[calc(100%-30vh)]   flex flex-col justify-between gap-8 ' style={{ scrollbarWidth: 'thin', scrollbarColor: 'grey transparent' }}>
           <style>
             {`
               ::-webkit-scrollbar {
@@ -215,7 +221,7 @@ const Sidebar = () => {
                           hiddenItems(e, w._id, index);
                           handleWorkspaceClick(index);
                         }}
-                        className="flex rounded-lg items-center cursor-pointer pl-12 py-2 hover:bg-primary-900/50"
+                        className="flex rounded-lg items-center cursor-pointer pl-12 py-2 hover:bg-primary-900/50 "
                       >
                         <IoIosArrowForward
                           id="rotateItem"
@@ -237,7 +243,7 @@ const Sidebar = () => {
                         />
                       </form>
                         {w.projects.length > 0 ? (
-                          <div className="flex flex-col w-full text-white">
+                          <div className="flex flex-col w-full text-white bg">
                             {w.projects.map((project, projectIndex) => (
                               <div
                                 key={projectIndex}

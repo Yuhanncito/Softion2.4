@@ -4,16 +4,23 @@ import { CONFIGURACIONES } from '../configs/confing';
 import Cookies from 'universal-cookie';
 import { GrClose } from "react-icons/gr";
 import TaskForm from './TaskForm';
+import { MdDelete } from "react-icons/md";
+
 
 
 function List() {
-  const { projectId } = useUserContext();
+  const { projectId, tareas, setTareas } = useUserContext();
   const [Data, setData] = useState([]);
   const [NewTask, setTask] = useState({
     nameTask: ''
   });
-  const [selectedTask, setSelectedTask] = useState(null); // Para manejar la tarea seleccionada
-  const [modalOpen, setModalOpen] = useState(false); // Para controlar la apertura/cierre del modal
+  const [selectedTask, setSelectedTask] = useState({
+    nameTask:'',
+    descriptionTask:'',
+    userTasks:[],
+    timeHoursTaks:'',
+    projectRelation:'',
+  }) // Para manejar la tarea seleccionada
   const [show, setShow] = useState(false)
 
 
@@ -32,6 +39,7 @@ function List() {
         }),
       });
       const parse = await response.json();
+      setTareas(parse)
       setData(parse);
     } catch (error) {
       console.log(error);
@@ -52,7 +60,7 @@ function List() {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const response = await fetch(CONFIGURACIONES.BASEURL + '/task/newTask', {
+      await fetch(CONFIGURACIONES.BASEURL + '/task/newTask', {
         body: JSON.stringify({
           projectRelation: projectId,
           nameTask: NewTask.nameTask
@@ -63,10 +71,6 @@ function List() {
           'x-access-token': cookies.get('x-access-user')
         }
       });
-      const parse = await response.json();
-      setTask({
-        nameTask: ''
-      });
       getTasks();
     } catch (error) {
       console.log(error);
@@ -76,12 +80,16 @@ function List() {
    // Función para eliminar una tarea
    const handleDelete = async taskId => {
     try {
-      await fetch(CONFIGURACIONES.BASEURL + `/task/${taskId}`, {
+      const res = await fetch(CONFIGURACIONES.BASEURL +`/task/${taskId}`, {
         method: 'DELETE',
         headers: {
+          'Content-Type': 'application/json',
           'x-access-token': cookies.get('x-access-user')
         }
       });
+      console.log(res)
+      const json = await res.json();
+      console.log(json)
       getTasks();
     } catch (error) {
       console.log(error);
@@ -97,7 +105,7 @@ function List() {
   // Función para cerrar el modal y limpiar la tarea seleccionada
   const handleCloseModal = () => {
     setSelectedTask(null);
-    setModalOpen(false);
+    setShow(false);
   };
 
   // Función para manejar cambios en el modal
@@ -112,11 +120,17 @@ function List() {
   const handleUpdate = async e => {
     e.preventDefault();
     try {
-      // Agrega aquí la lógica para enviar la actualización al servidor
-      // por ejemplo, un fetch con el método PUT
-      // ...
-
       // Después de la actualización, cierra el modal y vuelve a obtener las tareas
+      const Formulario = new FormData(e.target)
+      const id = Formulario.get('id')
+      const res = await fetch(CONFIGURACIONES.BASEURL+`/task/${id}`,{
+        method:'PUT',
+        headers:{
+            "Content-Type": "application/json",
+            "x-access-token": cookies.get("x-access-user"),
+        },
+        body:JSON.stringify(selectedTask)
+      })
       handleCloseModal();
       getTasks();
     } catch (error) {
@@ -124,6 +138,22 @@ function List() {
     }
   };
 
+  // Función para mostrar los responsables de la tarea
+  const mostrarResponsables = (responsables) => {
+    if (!responsables || responsables.length === 0) return <p>No hay responsables asignados</p>;
+    return (
+      <select className="py-1 px-2 rounded-md">
+        {responsables.map((responsable, index) => (
+          <option key={index} value={responsable}>{responsable}</option>
+        ))}
+      </select>
+    );
+  };
+
+  const mostrarHoras = horas =>{
+    if(!horas || horas === '0') return <p>No se han asignado horas</p>
+    return <p>{horas} horas</p>
+  }
 
   return (
  <div className="flex-col h-full">
@@ -131,16 +161,23 @@ function List() {
         {Data &&
           Data.map((task, index) => (
             <div key={index} className="w-full flex flex-row hover:bg-gray-500/50 border-b-2 transition-colors duration-75">
-              <div className="w-[35%] py-2 px-5 cursor-pointer" onClick={()=>handleOpenModal(task)}>
-                <p className="hover:bg-gray-300 py-1 px-5 rounded-md bg-transparent w-full focus:outline-none focus:bg-gray-200">{task.nameTask}</p>
-              </div>
-              <div className="w-[20%] border-6 border-red-500">
+              <div className="w-[35%] py-2 px-5 cursor-pointer flex items-center">
                 {/* Botón para eliminar tarea */}
-                <button onClick={() => handleDelete(task.id)} className="text-red-500 hover:text-red-700">Eliminar</button>
-              </div>
-              <div className="w-[20%]">
+                <MdDelete onClick={() => handleDelete(task._id)} className="hover:text-red-600 mr-2 text-red-500" />
                 {/* Botón para abrir modal de edición */}
-                <button onClick={()=>handleOpenModal(task)}>Editar</button>
+                <p onClick={()=> handleOpenModal(task)}  className="hover:bg-gray-300 py-1 px-5 rounded-md bg-transparent w-full focus:outline-none focus:bg-gray-200">{task.nameTask}</p>
+              </div>
+              <div id='estado' className="w-[20%] py-2 px-5 flex items-center">
+                {/* Botón para abrir modal de edición */}
+                <p>{task.status}</p>
+              </div>
+              <div id='Responsables' className="w-[20%] py-2 px-5 flex items-center">
+                {/* Muestra los responsables de la tarea */}
+                {mostrarResponsables(task.userTasks)}
+              </div>
+              <div id='time' className="w-[20%] py-2 px-5 flex items-center">
+                {/* Muestra el tiempo de la tarea */}
+                {mostrarHoras(task.timeHoursTaks)}
               </div>
               <div className="w-[25%]"></div>
 
@@ -154,7 +191,7 @@ function List() {
                       </button>
                     </div>
 
-                    <TaskForm handleChange={handleModalChange} tarea = {selectedTask} method={handleUpdate} />
+                    <TaskForm handleChange={handleModalChange} tarea = {selectedTask} method={handleUpdate} values ={selectedTask} />
 
                   </div>
                 </div>)
@@ -187,3 +224,5 @@ function List() {
   );
 }
 export default List;
+
+

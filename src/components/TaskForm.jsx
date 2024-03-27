@@ -1,17 +1,28 @@
+import { useUserContext } from "../context/UseContext";
 
-const TaskForm = ({tarea, method, handleChange}) => {
+const TaskForm = ({tarea, method, handleChange, values}) => {
+  const {projectId} = useUserContext();
 
+  if(!projectId) return null
 
+  const idTaks = (tarea) =>{
+    if(!tarea) return null
+    return <input type="hidden" name="id" value={tarea._id} />
+  }
+
+  values.projectRelation = projectId;
   return (
 
-        <form onSubmit={method} className="w-full">
-          <div className="mb-4">
 
+
+        <form onSubmit={method} className="w-full">
+          {idTaks(tarea)}
+          <div className="mb-4">
             <input
               type="text"
               id="taskName"
               name="nameTask"
-              value={(!tarea)?"":tarea.nameTask}
+              value={(!tarea)?((!values)?"":values.nameTask):tarea.nameTask}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500 text-3xl font-bold mb-6"
             />
@@ -26,8 +37,8 @@ const TaskForm = ({tarea, method, handleChange}) => {
             <input
               type="number"
               id="hours"
-              name="hours"
-              value={(!tarea)?"":tarea.timeHoursTaks}
+              name="timeHoursTaks"
+              value={(!tarea)?((!values)?"":values.timeHoursTaks):tarea.timeHoursTaks}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
             />
@@ -57,8 +68,8 @@ const TaskForm = ({tarea, method, handleChange}) => {
             </label>
             <textarea
               id="description"
-              name="description"
-              value={(!tarea)?"":tarea.descriptionTask}
+              name="descriptionTask"
+              value={(!tarea)?((!values)?"":values.descriptionTask):tarea.descriptionTask}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
             />
@@ -73,11 +84,13 @@ const TaskForm = ({tarea, method, handleChange}) => {
             <select
               id="status"
               name="status"
-              value={(!tarea)?"":tarea.status}
+              value={(!tarea)?((!values)?"":values.status):tarea.status}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
             >
-              <option value="pendiente">Pendiente</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Iniciado">Iniciado</option>
+              <option value="Concluido">Concluido</option>
               {/* Agrega más opciones según tus necesidades */}
             </select>
           </div>

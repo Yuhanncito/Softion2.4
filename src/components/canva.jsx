@@ -1,133 +1,203 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'; // Importar PropTypes
+import { useUserContext } from '../context/UseContext';
+import { CONFIGURACIONES } from "../configs/confing";
+import Cookies from "universal-cookie";
+import TaskForm from "../components/TaskForm";
+import { GrClose } from "react-icons/gr";
+
 
 function Canva() {
+  const cookies = new Cookies();
+  const {tareas, setTareas, projectId } = useUserContext();
+  const [show, setShow] = useState(false)
   const [tasks, setTasks] = useState([
-    { id: 1, name: 'Tarea 1', status: 'Pendiente', date: '2024-02-27' },
-    { id: 2, name: 'Tarea 2', status: 'Pendiente', date: '2024-02-28' },
-    { id: 3, name: 'Tarea 3', status: 'Iniciado', date: '2024-02-29' },
-    { id: 4, name: 'Tarea 4', status: 'Iniciado', date: '2024-02-29' },
-    { id: 5, name: 'Tarea 5', status: 'Iniciado', date: '2024-02-29' },
-    { id: 6, name: 'Tarea 6', status: 'Completado', date: '2024-02-29' },
-    { id: 7, name: 'Tarea 7', status: 'Completado', date: '2024-02-29' },
-    { id: 8, name: 'Tarea 8', status: 'Completado', date: '2024-02-29' },
   ]);
-
-  const dropRef = useRef(null);
-
-  function moveTask(fromIndex, toIndex, newStatus) {
-    const updatedTasks = [...tasks];
-    const [movedTask] = updatedTasks.splice(fromIndex, 1);
-
-    if (updatedTasks.filter((task) => task.status === newStatus).length === 0) {
-      newStatus = 'Pendiente';
+  const [selectedTask, setSelectedTask] = useState({
+    nameTask:'',
+    descriptionTask:'',
+    userTasks:[],
+    timeHoursTaks:'',
+    projectRelation:'',
+  })
+  const handleOpenModal = task => {
+    setSelectedTask(task);
+    setShow(true);
+  };
+  const handleModalChange = e => {
+    setSelectedTask({
+      ...selectedTask,
+      [e.target.name]: e.target.value
+    });
+  };
+  const handleCloseModal = () => {
+    setSelectedTask(null);
+    setShow(false);
+  };
+  const updateStatus = async (id,newState) =>{
+    try {
+      const res = await fetch(CONFIGURACIONES.BASEURL+`/task/${id}`,{
+        method:'PUT',
+        headers:{
+          "Content-Type": "application/json",
+          "x-access-token": cookies.get("x-access-user"),
+        },
+        body:JSON.stringify({
+          status:newState
+        })
+      })
+      const json = await res.json()
+      getTasks();
+    } catch (error) {
+      console.log(error)
     }
-
-    movedTask.status = newStatus;
-    updatedTasks.splice(toIndex, 0, movedTask);
-    setTasks(updatedTasks);
   }
+  const handleUpdate = async e => {
+    e.preventDefault();
+    try {
+      // Después de la actualización, cierra el modal y vuelve a obtener las tareas
+      const Formulario = new FormData(e.target)
+      const id = Formulario.get('id')
+      const res = await fetch(CONFIGURACIONES.BASEURL+`/task/${id}`,{
+        method:'PUT',
+        headers:{
+            "Content-Type": "application/json",
+            "x-access-token": cookies.get("x-access-user"),
+        },
+        body:JSON.stringify(selectedTask)
+      })
+      handleCloseModal();
+      getTasks();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getTasks = async () => {
+    try {
+      const response = await fetch(CONFIGURACIONES.BASEURL + '/task', {
+        method: 'POST',
+        headers: {
+          'x-access-token': cookies.get('x-access-user'),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          projectRelation: projectId
+        }),
+      });
+      const parse = await response.json();
+      setTareas(parse)
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  useEffect(() => {
+    getTasks();
+    if(!tareas) return null
+    setTasks(tareas);
+  }, [projectId,tareas])
+  
+
+  const moveTask = useCallback((dragId, hoverIndex, newState) => {
+    setTasks(prevTasks => {
+      const dragIndex = prevTasks.findIndex(task => task._id === dragId);
+      const dragTask = prevTasks[dragIndex];
+      if (!dragTask) {
+        console.error("Error: La tarea arrastrada no existe.");
+        return [...prevTasks];
+      }
+      updateStatus(dragId,newState)
+      const newTasks = tareas;
+      return newTasks;
+      
+    });
+  }, []);
 
   return (
-<DndProvider backend={HTML5Backend}>
-  <div className="flex h-full"> {/* Ajusta aquí la clase h-screen para que ocupe todo el alto de la pantalla */}
-    {/* Manejo de columnas vacías */}
-    {tasks.some((task) => task.status === '') && (
-      <div className="flex-1 p-4">
-        <h1 className="text-xl font-bold mb-4"></h1>
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex h-full">
+        <Estado title="Pendiente" modal={handleOpenModal} tasks={tasks.filter(task => task.status === 'Pendiente')} moveTask={moveTask} />
+        <Estado title="Iniciado" modal={handleOpenModal} tasks={tasks.filter(task => task.status === 'Iniciado')} moveTask={moveTask} />
+        <Estado title="Concluido" modal={handleOpenModal} tasks={tasks.filter(task => task.status === 'Concluido')} moveTask={moveTask} />
       </div>
-    )}
 
-    {/* Columna Pendiente */}
-    <div className="flex-1 p-4 overflow-y-auto "> {/* Añade overflow-y-auto aquí */}
-      <h1 className="text-xl font-bold mb-4">Pendiente</h1>
-      <div className="bg-gray-100 h-64" ref={dropRef}>
-        {tasks.map((task, index) => {
-          if (task.status === 'Pendiente') {
-            return (
-              <Task
-                key={task.id}
-                task={task}
-                index={index}
-                moveTask={moveTask}
-              />
-            );
-          }
-          return null;
-        })}
-      </div>
-    </div>
+      {
+                show &&(    
+                  <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
+                  <div id='Contenedor' className={`bg-white h-[65%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${show ? '' : 'hidden'}`}>
+                    <div className="flex justify-end">
+                      <button onClick={() => setShow(!show)} className="hover:bg-red-500 text-white p-2 rounded-full">
+                        <GrClose className="font-bold text-2xl text-black" />
+                      </button>
+                    </div>
 
-    {/* Columna Iniciado */}
-    <div className="flex-1 p-4 overflow-y-auto"> {/* Añade overflow-y-auto aquí */}
-      <h1 className="text-xl font-bold mb-4">Iniciado</h1>
-      <div className="bg-gray-100 h-64" ref={dropRef}>
-        {tasks.map((task, index) => {
-          if (task.status === 'Iniciado') {
-            return (
-              <Task
-                key={task.id}
-                task={task}
-                index={index}
-                moveTask={moveTask}
-              />
-            );
-          }
-          return null;
-        })}
-      </div>
-    </div>
+                    <TaskForm handleChange={handleModalChange} tarea = {selectedTask} method={handleUpdate} values ={selectedTask} />
 
-    {/* Columna Completado */}
-    <div className="flex-1 p-4 overflow-y-auto"> {/* Añade overflow-y-auto aquí */}
-      <h1 className="text-xl font-bold mb-4">Completado</h1>
-      <div className="bg-gray-100 h-64" ref={dropRef}>
-        {tasks.map((task, index) => {
-          if (task.status === 'Completado') {
-            return (
-              <Task
-                key={task.id}
-                task={task}
-                index={index}
-                moveTask={moveTask}
-              />
-            );
-          }
-          return null;
-        })}
-      </div>
-    </div>
-  </div>
-</DndProvider>
-
+                  </div>
+                </div>)
+              }
+    </DndProvider>
   );
 }
 
-function Task({ task, index, moveTask }) {
-  const [{ isDragging }, drag] = useDrag({
-    type: 'TASK',
-    item: { index, status: task.status },
-  });
-
+function Estado({ title, tasks, moveTask, modal }) {
+  const ref = useRef(null);
   const [, drop] = useDrop({
     accept: 'TASK',
-    hover: (item) => {
-      if (item.index !== index) {
-        moveTask(item.index, index, task.status);
-        item.index = index;
+    drop(item) {
+      if (!ref.current) {
+        return;
       }
+      const hoverIndex = tasks.length; // Coloca la tarea al final de la lista del estado actual
+      moveTask(item.id, hoverIndex, title);
+    },
+    collect: monitor => ({
+      isOver: !!monitor.isOver(),
+    }),
+  });
+
+  drop(ref);
+
+  return (
+    <div ref={ref} className="flex-1 p-4 overflow-y-auto">
+      <h1 className="text-xl font-bold mb-4">{title}</h1>
+      {tasks.map((task, index) => (
+        <Task onClick={modal} key={task.id} task={task} index={index} moveTask={moveTask} />
+      ))}
+    </div>
+  );
+}
+
+Estado.propTypes = {
+  title: PropTypes.string.isRequired,
+  tasks: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    nameTask: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    date: PropTypes.string.isRequired,
+  })).isRequired,
+  moveTask: PropTypes.func.isRequired,
+};
+
+function Task({ task, index, onClick }) {
+  const ref = useRef(null);
+  const [, drag] = useDrag({
+    type: 'TASK',
+    item: () => {
+      return { id: task._id, index, status: task.status };
     },
   });
 
+  drag(ref);
+
   return (
-    <div
-      ref={(node) => drag(drop(node))}
-      className={`bg-gray-200 p-4 shadow-lg border-2 border-black/20 rounded mb-4 cursor-move ${isDragging ? 'opacity-50' : ''} hover:scale-105 transition-all duration-500`}
-    >
-      <p className="text-lg font-bold mb-2">{task.name}</p>
+    <div onClick={()=>onClick(task)} ref={ref} className={'p-4 shadow-lg border-2 border-black/20 rounded mb-4 cursor-move hover:scale-105 transition-all duration-500'}>
+      <p className="text-lg font-bold mb-2">{task.nameTask}</p>
       <p className="text-sm text-gray-500">Fecha: {task.date}</p>
+      <p className="text-sm text-gray-500">Estado: {task.status}</p>
     </div>
   );
 }
@@ -136,12 +206,11 @@ Task.propTypes = {
   task: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
     date: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
   }).isRequired,
   index: PropTypes.number.isRequired,
   moveTask: PropTypes.func.isRequired,
 };
 
 export default Canva;
-

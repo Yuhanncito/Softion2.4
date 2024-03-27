@@ -6,9 +6,10 @@ const UserProvider = ({children}) =>{
     const [user, setUser] = useState(null);
     const [generalData, setGeneralData] = useState(null);
     const [projectId , setProjectId] = useState();
+    const [tareas, setTareas] = useState(null)
 
     return(
-        <UserContext.Provider value={{user,setUser,generalData,setGeneralData,projectId, setProjectId}}>
+        <UserContext.Provider value={{user,setUser,generalData,setGeneralData,projectId, setProjectId, tareas, setTareas}}>
             {children}
         </UserContext.Provider>
     )
