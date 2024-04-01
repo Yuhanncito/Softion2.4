@@ -3,7 +3,6 @@ import Login from "../Login";
 import Sidebar from "../App";
 //import List from "../components/List";
 import Ctarea from "../components/createTarea"
-import Canva from "../views/Canva";
 import Canva2 from "../components/canva";
 import RegisterCom from "../components/RegisterCom";
 import ForgetPassword from "../components/ForgetPassword"
@@ -17,9 +16,7 @@ import Gantt from "../components/Gantt";
 import Gantt2 from "../views/Gantt";
 import ForgetSecret from "../components/ForgetSecret";
 import TaskForm from "../components/TaskForm";
-import ProMate from "../views/Prototipos/ProMate";
 import Mate from "../views/Prototipos/Mate";
-
 
 
 export const router = createBrowserRouter([
@@ -35,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path:"/test/gantt",
         element: <Gantt2 />
+      },
+      {
+        path:"/mate",
+        element:<Mate />
       },
       {
         path: "/Register",
@@ -54,20 +55,8 @@ export const router = createBrowserRouter([
         element: <ResetPass />
       },
       {
-        path: "/pruebaCanva",
-        element: <Canva />
-      },
-      {
         path: "/ForgetSecret",
         element: <ForgetSecret />
-      },
-      {
-        path: "/ProMate",
-        element: <ProMate />
-      },
-      {
-        path: "/Mate",
-        element: <Mate />
       },
       {
         path: "/",
