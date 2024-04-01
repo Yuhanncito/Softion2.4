@@ -9,9 +9,12 @@ import { CONFIGURACIONES } from "../configs/confing";
 import TaskForm from "../components/TaskForm";
 import { GrClose } from "react-icons/gr";
 import { IoIosNotificationsOutline } from "react-icons/io";
+import { IoReload } from "react-icons/io5";
+import Swal from 'sweetalert2'
+
 
 // Agregar funcion para alerta de notificacaion
-// import { MdNotificationsActive } from "react-icons/md";
+import { MdNotificationsActive } from "react-icons/md";
 // <MdNotificationsActive />
 
 
@@ -22,6 +25,13 @@ function Contenido() {
   const [projecData, setProjecData] = useState(null);
   const [show, setShow] = useState(false);
   const [ver, setVer] = useState(false);
+  const [notiDefine,setNotiDefine] = useState('')
+  const [workSpace,setWorkspace] = useState(null)
+  const [invitations, setInvitations] = useState(null)
+  const [invitation,setInvitation] = useState({
+    email:'',
+    workSpace:''
+  })
   const [selectedTask, setSelectedTask] = useState({
     nameTask:'',
     descriptionTask:'',
@@ -31,6 +41,54 @@ function Contenido() {
   })
   const [showNotifications, setShowNotifications] = useState(false); // Estado para mostrar el modal de notificaciones
 
+  // Metodos HTTP
+  /* 
+    GET - Retorna sin enviar datos
+    POST - Retorna o no Pero envias Datos
+    PUT - Retorna o no Pero envias Datos
+    DELETE Retorna o no Pero no envias Datos
+
+  */
+
+  const getNotifications = async()=>{
+    try{
+     
+        const respuesta = await fetch(CONFIGURACIONES.BASEURL+`/invitation/${user._id}`,{
+          headers:{
+            "Content-Type":"application/json",
+            "x-access-token":cookies.get("x-access-user")
+          }
+        })
+        
+      
+      const json = await respuesta.json();
+      (json.invitations.length === 0)?setInvitations(null):setInvitations(json.invitations)
+
+      console.log("notificaciones",invitations)
+    }catch(err){
+      console.log("error de la notificacion",err)
+    }
+  }
+   
+  const getWorks = async() =>{
+    const datos2 = await fetch(CONFIGURACIONES.BASEURL+'/workspace',{
+      headers:{
+        "Content-Type":"application/json",
+        "x-access-token":cookies.get("x-access-user")
+      },
+      method:"GET"
+    })
+
+    const parseWork = await datos2.json();
+    console.log("invitaciones",parseWork)
+    setWorkspace(parseWork)
+  }
+
+  useEffect(() => {
+    getNotifications();
+    getWorks();
+  }, [])
+  
 
   useEffect(() => {
     const getInfoProject = async () => {
@@ -44,8 +102,6 @@ function Contenido() {
             }
           }
         );
-
-        console.log(response);
 
         const parse = await response.json();
 
@@ -93,30 +149,56 @@ function Contenido() {
     }
   };
 
+  //Funcion de aceptar o rechasar invitacion
+  const handleAccept = (e) => {
+    setNotiDefine(e.target.textContent)
+  }
+
+  //Funicion invitacion Datos
+  const handleChangeInvitation = (e) =>{
+    const name = e.target.name;
+    const value = e.target.value;
+    setInvitation({
+      ...invitation,
+      [name]:value
+    })
+  }
+
   // Funcion invitacion
-  const enviarIn = e =>{
+  // "content-type":"application/json",
+  // "x-access-token" : 'x-access-user'
+  //  body:invitation
+  const enviarIn = async e =>{
     e.preventDefault();
+    var message = ''
+    try{
+      const respuesta = await fetch(CONFIGURACIONES.BASEURL+'/invitation', {
+        method: "post",
+        headers: {
+          'content-type': "application/json",
+          'x-access-token': cookies.get('x-access-user')
+        },
+        body: JSON.stringify(invitation)
+      })
+      const json = await respuesta.json()
+      message = json.message;
+      console.log(json)
+    }catch(err){
+      console.log(err)
+    }
+    finally{
+      Swal.fire({
+        icon: (message !== 'ok')?"error":"success",
+        title: "Info",
+        text:(message !== 'ok')?"Ah Ocurrido un error":"Se envió correctamente la invitacion"
+      }); 
+    }
   }
 
     // Función para manejar la visibilidad del modal de notificaciones
     const toggleNotificationsModal = () => {
       setShowNotifications(!showNotifications);
     };
-
-    const invitations = [
-      { id: 1, message: 'José te ha invitado a su área de trabajo' },
-      { id: 2, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 3, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 4, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 5, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 6, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 7, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 8, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 9, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 10, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 11, message: 'Otra persona te ha invitado a su área de trabajo' },
-      { id: 12, message: 'Otra persona te ha invitado a su área de trabajo' },
-    ];
 
 
   
@@ -170,7 +252,7 @@ function Contenido() {
           <h3>Finalizado</h3>
         </div>
         <div id="notificaciones" className="absolute top-0 right-0 mr-8 ">
-          <IoIosNotificationsOutline className="text-4xl cursor-pointer" onClick={toggleNotificationsModal} />
+          {(!invitations)?<IoIosNotificationsOutline className="text-4xl cursor-pointer" onClick={toggleNotificationsModal} />:<MdNotificationsActive  className="text-4xl cursor-pointer font-red-500" onClick={toggleNotificationsModal}/>}
         </div>
       </div>
 
@@ -178,19 +260,25 @@ function Contenido() {
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
           <div className="bg-white h-[65%] m-auto w-[50%] max-h-[80%] overflow-y-auto shadow-2xl rounded-2xl p-8">
             <div className="sticky flex justify-end">
+              <button className="hover:bg-blue-500 hover:text-white text-white p-2 rounded-full" onClick={getNotifications} >
+                <IoReload  className="font-bold text-2xl text-black" />
+              </button>
               <button onClick={toggleNotificationsModal} className="hover:bg-red-500 text-white p-2 rounded-full">
                 <GrClose className="font-bold text-2xl text-black" />
               </button>
             </div>
             <h2 className="text-3xl font-bold mb-6">Notificaciones</h2>
-            <form action="">
+            <form onSubmit={(e)=>{
+              e.preventDefault();
+              console.log(notiDefine)
+            }}>
               <div className="flex flex-col gap-4">
-                {invitations.map(invitation => (
+                {(!invitations)?<p>Sin Notificaciones</p>:invitations.map(invitation => (
                   <div key={invitation.id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-                    <p className="text-lg font-semibold">{invitation.message}</p>
+                    <p className="text-lg font-semibold">{invitation.idPropietary.name} Te ah invitado a unirte a {invitation.idWorkSpace.workSpaceName}</p>
                     <div className="flex gap-2">
-                      <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Aceptar</button>
-                      <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Rechazar</button>
+                      <button onClick={handleAccept} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Aceptar</button>
+                      <button onClick={handleAccept} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Rechazar</button>
                     </div>
                   </div>
                 ))}
@@ -275,7 +363,18 @@ function Contenido() {
                   // onChange={handleEmailChange}
                   className="border ml-5 mb-3 w-[70%] border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"
                   required
+                  onChange={handleChangeInvitation}
                 />
+              </div>
+              <div className="">
+                <select name="workSpace" id="workSpace" onChange={handleChangeInvitation}>
+                  <option value="" default>Elija una opcion</option>
+                  {
+                    workSpace.map((name,key)=>{
+                      if(user._id === name.propetaryUser)return(<option value={name._id} key={key}>{name.workSpaceName}</option>)
+                    })
+                  }
+                </select>
               </div>
               <button
                 // onClick={handleSendRequest}

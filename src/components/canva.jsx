@@ -96,25 +96,26 @@ function Canva() {
   
   useEffect(() => {
     getTasks();
-    if(!tareas) return null
-    setTasks(tareas);
+    if(tareas) setTasks(tareas); 
+    // aqui el if retornava un "NULL" creo que eso lo petaba
+    /* 
+      if(!tarea) return null
+    */  
+      
+  
   }, [projectId,tareas])
   
 
-  const moveTask = useCallback((dragId, hoverIndex, newState) => {
-    setTasks(prevTasks => {
-      const dragIndex = prevTasks.findIndex(task => task._id === dragId);
-      const dragTask = prevTasks[dragIndex];
-      if (!dragTask) {
-        console.error("Error: La tarea arrastrada no existe.");
-        return [...prevTasks];
-      }
-      updateStatus(dragId,newState)
-      const newTasks = tareas;
-      return newTasks;
-      
-    });
-  }, []);
+  const moveTask = useCallback(async (dragId, hoverIndex, newState) => {
+    const dragIndex = tasks.findIndex(task => task._id === dragId);
+    const dragTask = tasks[dragIndex];
+    if (!dragTask) {
+      console.error("Error: La tarea arrastrada no existe.");
+      return;
+    }
+    await updateStatus(dragId, newState);
+    await getTasks();
+  }, [tasks, updateStatus, getTasks]);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -196,7 +197,7 @@ function Task({ task, index, onClick }) {
   return (
     <div onClick={()=>onClick(task)} ref={ref} className={'p-4 shadow-lg border-2 border-black/20 rounded mb-4 cursor-move hover:scale-105 transition-all duration-500'}>
       <p className="text-lg font-bold mb-2">{task.nameTask}</p>
-      <p className="text-sm text-gray-500">Fecha: {task.date}</p>
+      <p className="text-sm text-gray-500">Horas: {task.timeHoursTaks}</p>
       <p className="text-sm text-gray-500">Estado: {task.status}</p>
     </div>
   );
