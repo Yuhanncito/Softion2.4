@@ -1,43 +1,57 @@
 import Swal from 'sweetalert2';
 import { useState } from 'react';
+import { useUserContext } from "../../context/UseContext";
 
 function Mate() {
+  const { user } = useUserContext();
   const [formData, setFormData] = useState({
     nombreUsuario: '',
     datoTareaInicial:0,
-    datoTiempoInicial:0,
-    tiempoCompletado:0,
+    datoTiempoInicial:'',
+    tiempoCompletado:'',
     tareasCompletadas:0,
-    tiempoDiferencial:0
+    tiempoDiferencial:''
   });
 
-const [diferentialTasks, setDiferentialTasks] = useState(0)
+  const getSemanas = (semana1, semana2) =>{
+    const sem2 = new Date(semana1);
+    const sem1 = new Date(semana2);
+    const prueba = sem2.getTime()-sem1.getTime();
+    const dias = prueba / (1000*60*60*24);
+    const semanas = dias/7;
 
+    return semanas;
+
+  }
+ 
   const calcularPronostico = (e) => {
     e.preventDefault();
-    console.log(formData)
+    const {datoTiempoInicial, tiempoCompletado, tiempoDiferencial} = formData;
+    console.log(datoTiempoInicial, tiempoCompletado, tiempoDiferencial)
+
+    const diferencial1 = getSemanas(tiempoCompletado, datoTiempoInicial);
+    const diferencial2 = getSemanas(tiempoDiferencial, datoTiempoInicial);
+
+    console.log(`Primera Diferencia ${diferencial1} y Segunda Diferencia ${diferencial2}`)
+
+    // const sem2 = new Date(datoTiempoInicial);
+    // const sem1 = new Date(tiempoCompletado);
+    // const prueba = sem2.getTime()-sem1.getTime();
+    // const dias = prueba / (1000*60*60*24);
+    // const semanas = dias/7;
+
+    // console.log(`dias ${dias} y semanas ${semanas}`)
     let c, k, p;
-    c = Math.exp(formData.datoTiempoInicial)*formData.datoTareaInicial
-    k = Math.log(formData.tareasCompletadas/((c!=0)?c:1))/formData.tiempoCompletado;
-    p = ((c!=0)?c:1)*Math.exp(k*formData.tiempoDiferencial);
+    c = Math.exp(0)*formData.datoTareaInicial
+    k = Math.log(formData.tareasCompletadas/((c!=0)?c:1))/diferencial1;
+    p = ((c!=0)?c:1)*Math.exp(k*diferencial2);
     const sinDecimal = Math.trunc(p);
-   setDiferentialTasks(sinDecimal);
-   Swal.fire({
-    icon: "success",
-    title: "Objetivo del mes",
-    text:`Completar Máximo ${sinDecimal} Tareas`
-  }); 
+    Swal.fire({
+      icon: "success",
+      title: "Objetivo del mes",
+      text:`Completar Máximo ${sinDecimal} Tareas`
+    }); 
   };
-/*
-
- let c, k, p;
-    c = Math.exp(formData.datoTiempoInicial)*formData.datoTareaInicial
-    k = Math.log(formData.tareasCompletadas/(c!=0)?c:1)/formData.tiempoCompletado;
-    p = (c!=0)?c:1*Math.exp(k*formData.tiempoDiferencial);
-   setDiferentialTasks(p);
-
-*/
-// que lo acomplete con la "Ecuacion diferencial (dx/dt)=kx"
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +59,8 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
       ...prev,
       [name]: value,
     }));
+
+    console.log(name,value)
   };
 
   return (
@@ -56,7 +72,7 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="nombreUsuario">
               Nombre del Usuario:
             </label>
-            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" name="nombreUsuario" onChange={handleChange} />
+            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" name="nombreUsuario" onChange={handleChange} value={(!user)?"":user.name} />
           </div>
         </div>
         <div className='flex w-full justify-center font-bold text-xl p-2 mb-5 bg-gray-200 border-2 border-black rounded-lg'>
@@ -73,7 +89,7 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="tiempoCompletado">
               Tiempo en que se Completaron las Tareas (semanas):
             </label>
-            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" name="datoTiempoInicial" onChange={handleChange} />
+            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="date" name="datoTiempoInicial" onChange={handleChange} />
           </div>
         </div>
 
@@ -91,7 +107,7 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="tiempoCompletado">
               Tiempo en que se Completaron las Tareas (semanas):
             </label>
-            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" name="tiempoCompletado" value={formData.tiempoCompletado} onChange={handleChange} />
+            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="date" name="tiempoCompletado" value={formData.tiempoCompletado} onChange={handleChange} />
           </div>
         </div>
 
@@ -103,7 +119,7 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="tareasCompletadas">
               Semanas de diferencia:
             </label>
-            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="number" name="tiempoDiferencial" onChange={handleChange} />
+            <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" type="date" name="tiempoDiferencial" onChange={handleChange} />
           </div>
           <div className="w-full md:w-1/2 px-3">
             <input type="submit" value="Pronosticar" className=' px-20 py-3 bg-green-500 mt-6 rounded-md hover:bg-green-900 hover:scale-105 transition-all font-bold' />
@@ -114,4 +130,4 @@ const [diferentialTasks, setDiferentialTasks] = useState(0)
   );
 }
 
-export default Mate
+export default Mate;

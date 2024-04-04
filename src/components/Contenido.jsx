@@ -149,10 +149,7 @@ function Contenido() {
     }
   };
 
-  //Funcion de aceptar o rechasar invitacion
-  const handleAccept = (e) => {
-    setNotiDefine(e.target.textContent)
-  }
+ 
 
   //Funicion invitacion Datos
   const handleChangeInvitation = (e) =>{
@@ -170,7 +167,7 @@ function Contenido() {
   //  body:invitation
   const enviarIn = async e =>{
     e.preventDefault();
-    var message = ''
+    var message = {}
     try{
       const respuesta = await fetch(CONFIGURACIONES.BASEURL+'/invitation', {
         method: "post",
@@ -181,16 +178,17 @@ function Contenido() {
         body: JSON.stringify(invitation)
       })
       const json = await respuesta.json()
-      message = json.message;
+      message = {message:json.message,
+      code:"ok"};
       console.log(json)
     }catch(err){
       console.log(err)
     }
     finally{
       Swal.fire({
-        icon: (message !== 'ok')?"error":"success",
+        icon: (message.code !== 'ok')?"error":"success",
         title: "Info",
-        text:(message !== 'ok')?"Ah Ocurrido un error":"Se envió correctamente la invitacion"
+        text: message.message
       }); 
     }
   }
@@ -200,6 +198,36 @@ function Contenido() {
       setShowNotifications(!showNotifications);
     };
 
+     //Funcion de aceptar o rechasar invitacion
+    const handleAccept = (e) => {
+    setNotiDefine(e.target.id) 
+  }
+
+    // Fucion eliminar
+    const handleEventInvitation = async e =>{
+      if(notiDefine==='deny') e.preventDefault();
+      const formulario = new FormData(e.target);
+
+      const idInvitacion = formulario.get('idInvitation');
+      console.log(idInvitacion)
+      try{
+        const respuesta = await fetch(CONFIGURACIONES.BASEURL+`/invitation/${idInvitacion}`, {
+          method: (notiDefine==='deny')?"DELETE":"PUT",
+          headers: {
+            'content-type': "application/json",
+            'x-access-token': cookies.get('x-access-user')
+          },
+        })
+        const json = await respuesta.json()
+        console.log(json)
+
+        if(notiDefine==='deny') await getNotifications();
+      }
+      catch(err){
+        console.log(err)
+      }
+    
+    }
 
   
   return (
@@ -268,22 +296,20 @@ function Contenido() {
               </button>
             </div>
             <h2 className="text-3xl font-bold mb-6">Notificaciones</h2>
-            <form onSubmit={(e)=>{
-              e.preventDefault();
-              console.log(notiDefine)
-            }}>
               <div className="flex flex-col gap-4">
                 {(!invitations)?<p>Sin Notificaciones</p>:invitations.map(invitation => (
-                  <div key={invitation.id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
+                <form onSubmit={handleEventInvitation} key={invitation._id} >
+                  <input type="hidden" name="idInvitation" value={invitation._id} />
+                  <div  className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
                     <p className="text-lg font-semibold">{invitation.idPropietary.name} Te ah invitado a unirte a {invitation.idWorkSpace.workSpaceName}</p>
                     <div className="flex gap-2">
-                      <button onClick={handleAccept} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Aceptar</button>
-                      <button onClick={handleAccept} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Rechazar</button>
+                      <button onClick={handleAccept} id="accept" className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Aceptar</button>
+                      <button onClick={handleAccept} id="deny" className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Rechazar</button>
                     </div>
                   </div>
+                </form >
                 ))}
               </div>
-            </form>
           </div>
         </div>
       )}
