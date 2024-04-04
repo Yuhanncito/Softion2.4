@@ -16,12 +16,8 @@ import Gantt from "../components/Gantt";
 import Gantt2 from "../views/Gantt";
 import ForgetSecret from "../components/ForgetSecret";
 import TaskForm from "../components/TaskForm";
-<<<<<<< HEAD
+
 import Mate from "../views/Prototipos/Mate";
-=======
-//import ProMate from "../views/Prototipos/ProMate";
-//import Mate from "../views/Prototipos/Mate";
->>>>>>> 9ab743dd1a265d58bdbb1b7483af76e4a4e32a66
 
 
 export const router = createBrowserRouter([
