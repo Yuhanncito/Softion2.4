@@ -5,14 +5,25 @@ import Cookies from 'universal-cookie';
 import { GrClose } from "react-icons/gr";
 import TaskForm from './TaskForm';
 import { MdDelete } from "react-icons/md";
+import {useQuery, useQueryClient} from "@tanstack/react-query"
+import Swal from 'sweetalert2'
+import UserResponsable from './UserResponsable';
+
 
 
 
 function List() {
+  const queryClient = useQueryClient();
+  const [works, setWorks] = useState()
   const { projectId, tareas, setTareas } = useUserContext();
   const [Data, setData] = useState([]);
+  const [addUsers, setAddUsers] = useState(false)
   const [NewTask, setTask] = useState({
-    nameTask: ''
+    nameTask: '',
+    descriptionTask:'',
+    userTasks:[],
+    timeHoursTaks:'',
+    projectRelation:'',
   });
   const [selectedTask, setSelectedTask] = useState({
     nameTask:'',
@@ -47,6 +58,7 @@ function List() {
   };
 
   useEffect(() => {
+    setWorks(queryClient.getQueryData('workspaces'))
     if (projectId) getTasks();
   }, [projectId]);
 
@@ -59,11 +71,33 @@ function List() {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    let foundProject = false;
+    let idWork = ''
+    let info = ''
+    for (const work of works) {
+      for (const project of work.projects) {
+        if (project._id === projectId) {
+          idWork = work._id;
+          foundProject = true;
+          break;
+        }
+      }
+      if (foundProject) {
+        break;
+      }
+    }
+
+    if (!foundProject) {
+      console.log("Proyecto no encontrado");
+      return;
+    }
+
     try {
-      await fetch(CONFIGURACIONES.BASEURL + '/task/newTask', {
+      const res = await fetch(CONFIGURACIONES.BASEURL + '/task/newTask', {
         body: JSON.stringify({
           projectRelation: projectId,
-          nameTask: NewTask.nameTask
+          nameTask: NewTask.nameTask,
+          workspaceid: idWork
         }),
         method: 'POST',
         headers: {
@@ -71,28 +105,66 @@ function List() {
           'x-access-token': cookies.get('x-access-user')
         }
       });
+      const json = await res.json();
+      info = json;
       getTasks();
     } catch (error) {
-      console.log(error);
+      info = error
+    }
+    finally{
+      if(info.message !== 'ok')
+      Swal.fire({
+        icon:"error",
+        title: "Info",
+        text: info.message
+      }); 
     }
   };
 
    // Función para eliminar una tarea
    const handleDelete = async taskId => {
+    let foundProject = false;
+    let idWork = ''
+    let info = ''
+    for (const work of works) {
+      for (const project of work.projects) {
+        if (project._id === projectId) {
+          idWork = work._id;
+          foundProject = true;
+          break;
+        }
+      }
+      if (foundProject) {
+        break;
+      }
+    }
+    if (!foundProject) {
+      console.log("Proyecto no encontrado");
+      return;
+    }
     try {
       const res = await fetch(CONFIGURACIONES.BASEURL +`/task/${taskId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'x-access-token': cookies.get('x-access-user')
-        }
+        },
+        body:JSON.stringify({
+          workspaceid:idWork
+        })
       });
-      console.log(res)
       const json = await res.json();
-      console.log(json)
+      info = json
       getTasks();
     } catch (error) {
       console.log(error);
+    }finally{
+      if(info.message !== 'ok')
+      Swal.fire({
+        icon:"error",
+        title: "Info",
+        text: info.message
+      }); 
     }
   };
 
@@ -119,6 +191,27 @@ function List() {
   // Función para actualizar la tarea
   const handleUpdate = async e => {
     e.preventDefault();
+
+    let foundProject = false;
+    let idWork = ''
+    let info = ''
+    for (const work of works) {
+      for (const project of work.projects) {
+        if (project._id === projectId) {
+          idWork = work._id;
+          foundProject = true;
+          break;
+        }
+      }
+      if (foundProject) {
+        break;
+      }
+    }
+    if (!foundProject) {
+      console.log("Proyecto no encontrado");
+      return;
+    }
+
     try {
       // Después de la actualización, cierra el modal y vuelve a obtener las tareas
       const Formulario = new FormData(e.target)
@@ -129,12 +222,22 @@ function List() {
             "Content-Type": "application/json",
             "x-access-token": cookies.get("x-access-user"),
         },
-        body:JSON.stringify(selectedTask)
+        body:JSON.stringify({...selectedTask,workspaceid:idWork})
       })
+      const json = await res.json()
       handleCloseModal();
       getTasks();
+      info = json
     } catch (error) {
       console.log(error);
+    }
+    finally{
+      if(info.message !== 'ok')
+      Swal.fire({
+        icon:"error",
+        title: "Info",
+        text: info.message
+      }); 
     }
   };
 
@@ -144,7 +247,7 @@ function List() {
     return (
       <select className="py-1 px-2 rounded-md">
         {responsables.map((responsable, index) => (
-          <option key={index} value={responsable}>{responsable}</option>
+          <option key={index} value={responsable}>{responsable.name}</option>
         ))}
       </select>
     );
@@ -158,14 +261,14 @@ function List() {
   return (
  <div className="flex-col h-full">
       <div className="flex flex-col w-[100%] h-[calc(100%-10%)] p-5">
-        {Data &&
-          Data.map((task, index) => (
+        {tareas &&
+          tareas.map((task, index) => (
             <div key={index} className="w-full flex flex-row hover:bg-gray-500/50 border-b-2 transition-colors duration-75">
               <div className="w-[35%] py-2 px-5 cursor-pointer flex items-center">
                 {/* Botón para eliminar tarea */}
-                <MdDelete onClick={() => handleDelete(task._id)} className="hover:text-red-600 mr-2 text-red-500" />
+                <MdDelete id='tasks' onClick={() => handleDelete(task._id)} className="hover:text-red-600 mr-2 text-red-500" />
                 {/* Botón para abrir modal de edición */}
-                <p onClick={()=> handleOpenModal(task)}  className="hover:bg-gray-300 py-1 px-5 rounded-md bg-transparent w-full focus:outline-none focus:bg-gray-200">{task.nameTask}</p>
+                <p onClick={()=> handleOpenModal(task)} className="hover:bg-gray-300 py-1 px-5 rounded-md bg-transparent w-full focus:outline-none focus:bg-gray-200">{task.nameTask}</p>
               </div>
               <div id='estado' className="w-[20%] py-2 px-5 flex items-center">
                 {/* Botón para abrir modal de edición */}
@@ -186,13 +289,13 @@ function List() {
                   <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
                   <div id='Contenedor' className={`bg-white h-[65%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${show ? '' : 'hidden'}`}>
                     <div className="flex justify-end">
-                      <button onClick={() => setShow(!show)} className="hover:bg-red-500 text-white p-2 rounded-full">
+                      <button onClick={() => [setShow(!show),setAddUsers(!addUsers)]} className="hover:bg-red-500 text-white p-2 rounded-full">
                         <GrClose className="font-bold text-2xl text-black" />
                       </button>
                     </div>
 
-                    <TaskForm handleChange={handleModalChange} tarea = {selectedTask} method={handleUpdate} values ={selectedTask} />
-
+                    {addUsers?<UserResponsable task={selectedTask} works={works} userSets={()=>setAddUsers(!addUsers)} />:<TaskForm userSets={()=>setAddUsers(!addUsers)} handleChange={handleModalChange} tarea = {selectedTask} projectId={projectId} method={handleUpdate} values ={selectedTask} />
+}
                   </div>
                 </div>)
               }

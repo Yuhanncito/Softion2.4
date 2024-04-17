@@ -11,7 +11,7 @@ import { GrClose } from "react-icons/gr";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { IoReload } from "react-icons/io5";
 import Swal from 'sweetalert2'
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Agregar funcion para alerta de notificacaion
 import { MdNotificationsActive } from "react-icons/md";
@@ -19,14 +19,17 @@ import { MdNotificationsActive } from "react-icons/md";
 
 
 
-function Contenido() {
-  const { projectId, user } = useUserContext();
+
+
+function Contenido({workSpace , isLoading}) {
+  const { projectId, user, setTareas, setProjecId } = useUserContext();
+  const queryClient = useQueryClient();
   const cookies = new Cookies();
   const [projecData, setProjecData] = useState(null);
   const [show, setShow] = useState(false);
   const [ver, setVer] = useState(false);
   const [notiDefine,setNotiDefine] = useState('')
-  const [workSpace,setWorkspace] = useState(null)
+  const [works, setWorks] = useState()
   const [invitations, setInvitations] = useState(null)
   const [invitation,setInvitation] = useState({
     email:'',
@@ -37,7 +40,6 @@ function Contenido() {
     descriptionTask:'',
     userTasks:[],
     timeHoursTaks:'',
-    projectRelation:'',
   })
   const [showNotifications, setShowNotifications] = useState(false); // Estado para mostrar el modal de notificaciones
 
@@ -70,48 +72,69 @@ function Contenido() {
     }
   }
    
-  const getWorks = async() =>{
-    const datos2 = await fetch(CONFIGURACIONES.BASEURL+'/workspace',{
-      headers:{
-        "Content-Type":"application/json",
-        "x-access-token":cookies.get("x-access-user")
-      },
-      method:"GET"
-    })
 
-    const parseWork = await datos2.json();
-    console.log("invitaciones",parseWork)
-    setWorkspace(parseWork)
-  }
+  const getTasks = async () => {
+    try {
+      const response = await fetch(CONFIGURACIONES.BASEURL + '/task', {
+        method: 'POST',
+        headers: {
+          'x-access-token': cookies.get('x-access-user'),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          projectRelation: projecData._id
+        }),
+      });
+      const parse = await response.json();
+      setTareas(parse);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+
+
+
+  
   useEffect(() => {
+    setWorks(queryClient.getQueryData('workspaces'))
+    if (projectId){
     getNotifications();
-    getWorks();
-  }, [])
+    setSelectedTask({
+      ...selectedTask,
+      projectRelation: projectId  
+    });
+  }
+  }, [projectId])
   
 
-  useEffect(() => {
-    const getInfoProject = async () => {
-      try {
-        const response = await fetch(
-          CONFIGURACIONES.BASEURL + `/projects/${projectId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "x-access-token": cookies.get("x-access-user"),
-            }
+
+  const getInfoProject = async () => {
+    try {
+      const response = await fetch(
+        CONFIGURACIONES.BASEURL + `/projects/${projectId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": cookies.get("x-access-user"),
           }
-        );
+        }
+      );
 
-        const parse = await response.json();
+      const parse = await response.json();
 
-        console.log(parse);
-        if (parse.message === "ok") setProjecData(parse.data);
-      } catch (error) {
-        console.log(error)
-      }
-    };
+      console.log(parse);
+      if (parse.message === "ok") setProjecData(parse.data);
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+
+  useEffect(() => {
+    
     if (projectId) getInfoProject();
+
   }, [projectId]);
 
   // Función para manejar cambios en el modal
@@ -131,19 +154,49 @@ function Contenido() {
   // Función para actualizar la tarea
   const handleUpdate = async e => {
     e.preventDefault();
+
+    let foundProject = false;
+    let idWork = ''
+    let info = ''
+    for (const work of works) {
+      for (const project of work.projects) {
+        if (project._id === projectId) {
+          idWork = work._id;
+          foundProject = true;
+          break;
+        }
+      }
+      if (foundProject) {
+        break;
+      }
+    }
+    if (!foundProject) {
+      console.log("Proyecto no encontrado");
+      return;
+    }
+
+    
+
     try {
+
       
+      
+      console.log(selectedTask)
+
       const res = await fetch(CONFIGURACIONES.BASEURL+`/task/newTask`,{
         method:'POST',
         headers:{
             "Content-Type": "application/json",
             "x-access-token": cookies.get("x-access-user"),
         },
-        body:JSON.stringify(selectedTask)
+        body:JSON.stringify({
+          ...selectedTask,
+          projectRelation: projectId,
+          workspaceid:idWork})
       })
       const json = await res.json()
-      console.log(json)
       handleCloseModal();
+      getTasks();
     } catch (error) {
       console.log(error);
     }
@@ -180,7 +233,6 @@ function Contenido() {
       const json = await respuesta.json()
       message = {message:json.message,
       code:"ok"};
-      console.log(json)
     }catch(err){
       console.log(err)
     }
@@ -203,13 +255,10 @@ function Contenido() {
     setNotiDefine(e.target.id) 
   }
 
-    // Fucion eliminar
-    const handleEventInvitation = async e =>{
-      if(notiDefine==='deny') e.preventDefault();
-      const formulario = new FormData(e.target);
 
-      const idInvitacion = formulario.get('idInvitation');
-      console.log(idInvitacion)
+    //Prueba con React Query.
+    const handleActionInvitation = async (idInvitacion) =>{
+
       try{
         const respuesta = await fetch(CONFIGURACIONES.BASEURL+`/invitation/${idInvitacion}`, {
           method: (notiDefine==='deny')?"DELETE":"PUT",
@@ -221,13 +270,26 @@ function Contenido() {
         const json = await respuesta.json()
         console.log(json)
 
-        if(notiDefine==='deny') await getNotifications();
+        await getNotifications();
       }
       catch(err){
         console.log(err)
       }
-    
+
     }
+    const handleInvitationResponse = async e => {
+      e.preventDefault();
+      const formulario = new FormData(e.target);
+      const idInvitacion = formulario.get('idInvitation');
+      updateWorkSpaces.mutate(idInvitacion);
+    }
+
+  const updateWorkSpaces = useMutation({
+    mutationFn: handleActionInvitation,
+    onSuccess: () =>{
+      queryClient.invalidateQueries('workspaces');
+    },
+  })
 
   
   return (
@@ -298,7 +360,7 @@ function Contenido() {
             <h2 className="text-3xl font-bold mb-6">Notificaciones</h2>
               <div className="flex flex-col gap-4">
                 {(!invitations)?<p>Sin Notificaciones</p>:invitations.map(invitation => (
-                <form onSubmit={handleEventInvitation} key={invitation._id} >
+                <form onSubmit={handleInvitationResponse} key={invitation._id} >
                   <input type="hidden" name="idInvitation" value={invitation._id} />
                   <div  className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
                     <p className="text-lg font-semibold">{invitation.idPropietary.name} Te ah invitado a unirte a {invitation.idWorkSpace.workSpaceName}</p>
@@ -338,7 +400,7 @@ function Contenido() {
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm transition-all duration-1000">
           <div
             id="Contenedor"
-            className={`bg-white h-[65%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${
+            className={`bg-white h-[70%] m-auto w-[50%] shadow-2xl rounded-2xl p-8 ${
               show ? "" : "hidden"
             }`}
           >
@@ -356,6 +418,7 @@ function Contenido() {
               handleChange={handleModalChange}
               method={handleUpdate}
               values={selectedTask}
+              projectId={projectId}
             />
           </div>
         </div>
@@ -393,14 +456,17 @@ function Contenido() {
                 />
               </div>
               <div className="">
+                {(isLoading)?<IoReload  className="font-bold text-2xl text-black animate-spin" />:
                 <select name="workSpace" id="workSpace" onChange={handleChangeInvitation}>
-                  <option value="" default>Elija una opcion</option>
-                  {
-                    workSpace.map((name,key)=>{
-                      if(user._id === name.propetaryUser)return(<option value={name._id} key={key}>{name.workSpaceName}</option>)
-                    })
-                  }
-                </select>
+                <option value="" default>Elija una opcion</option>
+                {
+                  workSpace.map((name,key)=>{
+                    if(user._id === name.propetaryUser._id)return(<option value={name._id} key={key}>{name.workSpaceName}</option>)
+                  })
+                }
+              </select>
+                }
+                
               </div>
               <button
                 // onClick={handleSendRequest}

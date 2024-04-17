@@ -5,6 +5,10 @@ import { useUserContext } from "../context/UseContext";
 import SearchButton from "./SearchButton";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Swal from 'sweetalert2'
+import { MdEdit } from "react-icons/md";
+
 
 
 const cookies = new Cookies();
@@ -16,13 +20,18 @@ import { IoCloseSharp } from "react-icons/io5";
 import { FaHome } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { CONFIGURACIONES } from "../configs/confing";
+import { IoReload } from "react-icons/io5";
+
+
+// Items
 import ProjectItem from "./ProjectItem";
 
 
 
 
 
-const Sidebar = () => {
+const Sidebar = ({isLoading, workSpace}) => {
+  
   const {setProjectId} = useUserContext();
   const navigate = useNavigate();
   const [ShowMenu, setShowMenu] = useState(false);
@@ -30,11 +39,11 @@ const Sidebar = () => {
   const Menus = ['cerrar sesion'];
   const [Open,setOpen] = useState(false);
   const [project,setProject] = useState([]);
-  const [workspace,setWorkspace] = useState([]);
   const [searchProject, setSearchProject] = useState([])
   const [search, setSearch] = useState('');
   const [newProject, setNewProject] =  useState('');
-
+  const queryClient = useQueryClient();
+  
 
   const [visibleWorkspaces, setVisibleWorkspaces] = useState([]);
   
@@ -64,80 +73,69 @@ const Sidebar = () => {
 
   const handleSubmitProject = async (e, workSpaceId) => {
     e.preventDefault();
-    const formulario = new FormData(e.target);
-    const resp = await fetch(CONFIGURACIONES.BASEURL + "/projects", {
-      headers: {
-        "Content-Type": "application/json",
-        "x-access-token": cookies.get("x-access-user"),
-      },
-      method: "POST",
-      body: JSON.stringify({
-        nameProject: newProject,
-        workspaceid: workSpaceId,  // Usa el workSpaceId recibido
-      }),
-    });
-    console.log(resp);
-    const parse = await resp.json();
-    console.log(parse);
-    getData();
-    setNewProject('');
+    let info = ''
+    try {
+      const formulario = new FormData(e.target);
+      const resp = await fetch(CONFIGURACIONES.BASEURL + "/projects", {
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": cookies.get("x-access-user"),
+        },
+        method: "POST",
+        body: JSON.stringify({
+          nameProject: newProject,
+          workspaceid: workSpaceId,  // Usa el workSpaceId recibido
+        }),
+      });
+      const parse = await resp.json();
+      info = parse
+      queryClient.invalidateQueries('workspaces')
+      setNewProject('');
+    } catch (error) {
+      console.log(error)
+    }finally{
+      if(info.message !== 'ok')
+      Swal.fire({
+        icon:"error",
+        title: "Info",
+        text: info.message
+      }); 
+    }
   };
 
-    const  handleDeleteProject = async (e) => {
-      e.preventDefault()
-      try {
-        const formulario = new FormData(e.target)
-        const idProject=formulario.get('id')
-        const response = await fetch(CONFIGURACIONES.BASEURL+`/projects/${idProject}`,{
-          headers:{
-            'Content-Type':'application/json',
-            'x-access-token':cookies.get("x-access-user")
-          },
-          method:'DELETE',
-          body:JSON.stringify({
-            workspaceid:formulario.get('idWorkSpace')
-          })
-        })
-
-        const json = await response.json();
-        console.log(json);
-      } catch (error) {
-        console.log(error)
-      }
-      finally{getData()}
-    }
-
-    const getData = async() =>{
-      const datos = await fetch(CONFIGURACIONES.BASEURL+'/projects',{
-        headers:{
-          "Content-Type":"application/json",
-          "x-access-token":cookies.get("x-access-user")
-        },
-        method:"GET"
-      })
-
-      const datos2 = await fetch(CONFIGURACIONES.BASEURL+'/workspace',{
-        headers:{
-          "Content-Type":"application/json",
-          "x-access-token":cookies.get("x-access-user")
-        },
-        method:"GET"
-      })
-
-      const parse = await datos.json();
-      const parse2 = await datos2.json();
-
-      setProject(parse)
-      setSearchProject(parse)
-      setWorkspace(parse2)
-      console.log("proyectos",parse)
-      console.log("trabajos",parse2)
-    }
-
-    useEffect(() => {
+  const handleDeleteProject = async (e) => {
+    e.preventDefault();
+    let info = ''
+    const formulario = new FormData(e.target);
+    const idProject = formulario.get('id');
+    const workSpaceId = formulario.get('idWorkSpace'); // Asegúrate de que este campo exista en tu formulario
+    try {
       
-      getData()
-    }, [])
+      const res = await fetch(`${CONFIGURACIONES.BASEURL}/projects/${idProject}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': cookies.get("x-access-user"),
+        },
+        body: JSON.stringify({
+          workspaceid: workSpaceId,
+        }),
+      });
+      const json = await res.json()
+      info = json
+      queryClient.invalidateQueries('workspaces')
+    } catch (error) {
+      console.log(error);
+    }finally{
+      if(info.message !== 'ok')
+      Swal.fire({
+        icon:"error",
+        title: "Info",
+        text: info.message
+      }); 
+    }
+  };
+
 
 
     /*Pruebas Sid */
@@ -162,7 +160,8 @@ const Sidebar = () => {
       setVisibleWorkspaces(updatedVisibleWorkspaces);
     };
   
-    
+  //pruebas con React Query
+
 
   return (
     <>
@@ -201,9 +200,9 @@ const Sidebar = () => {
           <nav className="flex flex-col gap-7">
             <SearchButton  handleSubmit={searchSubmit} onChange={handleChange}  />
 
-            <a href="/App" className='flex items-center gap-4 text-white py-2 px-4 rounded-xl hover:bg-primary-900/50 transition-colors'> 
+            <Link to="/App" className='flex items-center gap-4 text-white py-2 px-4 rounded-xl hover:bg-primary-900/50 transition-colors'> 
               <FaHome />Inicio
-            </a>
+            </Link>
 
             <div className="flex w-full py-4 ">
               <div className="flex w-full flex-col items-center">
@@ -213,8 +212,10 @@ const Sidebar = () => {
                 </div>
 
 
-                <div className={((showWorkspace)?"hidden ":"")+"flex flex-col w-full text-white" }>
-                  {workspace.map((w, index) => (
+                
+                  {(isLoading)?<IoReload  className="font-bold text-2xl text-white animate-spin" />:
+                    workSpace.map((w, index) => (
+                    <div className={((showWorkspace)?"hidden ":"")+"flex flex-col w-full text-white" }>
                     <div className="mb-4" key={index}>
                       <div
                         onClick={(e) => {
@@ -227,7 +228,7 @@ const Sidebar = () => {
                           id="rotateItem"
                           className={`transition-all flex mr-2 ${visibleWorkspaces[index] ? '' : 'rotate-90'}`}
                         />
-                        <h1>{w.workSpaceName}</h1>
+                        <h1>{w.workSpaceName} de {w.propetaryUser.name} </h1>
                       </div>
                     <div className={`flex flex-col w-full text-white ${visibleWorkspaces[index] ? '' : 'hidden'}`}>
                       <form onSubmit={(e) => handleSubmitProject(e, w._id)} className="w-full m-auto flex flex-col">
@@ -247,7 +248,7 @@ const Sidebar = () => {
                             {w.projects.map((project, projectIndex) => (
                               <div
                                 key={projectIndex}
-                                style={{ marginBottom: '10px' }}>
+                                className='mb-[10px] w-full px-1 py-2 flex justify-between items-center'>
                                 <ProjectItem
                                   context={setProjectId}
                                   workSpaceid={w._id}
@@ -255,7 +256,11 @@ const Sidebar = () => {
                                   name={project.nameProject}
                                   id={project._id}
                                 />
+                                
+                                  <button className='flex justify-center items-center text-white-500 py-2 px-3 hover:bg-primary-900/50 rounded-lg hover:text-white pt-3'><MdEdit /></button>
+                               
                               </div>
+
                             ))}
                           </div>
                         ) : (
@@ -263,8 +268,9 @@ const Sidebar = () => {
                         )}
                       </div>
                     </div>
+                    </div>
                   ))}
-                </div>
+                
               </div>
             </div>
           </nav>

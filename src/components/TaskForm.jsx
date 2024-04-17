@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useUserContext } from "../context/UseContext";
+import { FaArrowRight } from "react-icons/fa";
 
-const TaskForm = ({tarea, method, handleChange, values}) => {
+const TaskForm = ({tarea, method, handleChange, values, userSets}) => {
   const {projectId} = useUserContext();
 
   if(!projectId) return null
@@ -10,7 +12,10 @@ const TaskForm = ({tarea, method, handleChange, values}) => {
     return <input type="hidden" name="id" value={tarea._id} />
   }
 
-  values.projectRelation = projectId;
+  useEffect(() => {
+    console.log(projectId)
+  })
+
   return (
 
 
@@ -50,14 +55,10 @@ const TaskForm = ({tarea, method, handleChange, values}) => {
             >
               Encargados:
             </label>
-            <input
-              type="text"
-              id="assignees"
-              name="assignees"
-              value={''}
-              onChange={handleChange}
-              className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500"
-            />
+            <div onClick={userSets} className="flex justify-between items-center cursor-pointer mt-1 p-2 w-full border rounded-md focus:outline-none focus:border-blue-500">
+              <p>Agregar encargados</p>
+              <FaArrowRight />
+            </div>
           </div>
           <div className="mb-4">
             <label
@@ -105,3 +106,5 @@ const TaskForm = ({tarea, method, handleChange, values}) => {
 };
 
 export default TaskForm;
+
+

@@ -35,14 +35,9 @@ export const router = createBrowserRouter([
         element: <Gantt2 />
       },
       {
-        path:"/mate",
-        element:<Mate />
-      },
-      {
         path: "/Register",
         element: <RegisterCom />,
       },
-      
       {
         path: "/CodigoVer",
         element: <CodigoVer />,
@@ -67,6 +62,9 @@ export const router = createBrowserRouter([
                 path:"/App",
                 index:true,
                 element:<Sidebar />
+              },{
+                path:"/Mate",
+                element:<Mate />
               },
               {
                 path: "/List",

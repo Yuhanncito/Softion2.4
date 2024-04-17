@@ -24,7 +24,6 @@ function CodigoVer() {
 
   const onSubmit = async(data) =>{
     try{
-      console.log(generalData.form)
       const res = await fetch(CONFIGURACIONES.BASEURL+`/auth/${(generalData.option === "register")?'signup':(generalData.option==="login")?'signin':'forgotPassword'}/confirm`,{
         method:"POST",
         headers:{
@@ -53,6 +52,7 @@ function CodigoVer() {
           navigate("/ResetPass");  
         }
         else{
+          
           navigate("/App");
         }
         

@@ -27,7 +27,7 @@ export default function SearchButton(element) {
           setSelect(e.target.value);
         }} className={((select>0)?'':'bg-gray-400')+" rounded-sm ml-1"}>
           <option value="0">Todos</option>
-          <option value="1">Recientes</option>
+          <option value="1">Propios</option>
         </select>
       </div>
     </form>
